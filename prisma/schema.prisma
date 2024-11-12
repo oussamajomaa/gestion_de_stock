@@ -1,0 +1,58 @@
+datasource db {
+    provider = "mysql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model User {
+    id           Int           @id @default(autoincrement())
+    email        String        @unique
+    password     String
+    role         String
+    transactions Transaction[] // Relation avec Transaction (one-to-many)
+}
+
+model Article {
+    id                  Int           @id @default(autoincrement())
+    article_name        String        @unique
+    article_description String
+    unit                String
+    unit_price          Float
+    barcode             String
+    expiration_date     DateTime
+    article_quantity    Float
+    quantity_min        Float
+    recettes            Recette[] // Relation vers Recette (many-to-many)
+    categoryId          Int?
+    category            Category?     @relation(fields: [categoryId], references: [id])
+    transaction         Transaction[]
+}
+
+model Transaction {
+    id                   Int      @id @default(autoincrement())
+    transaction_date     DateTime
+    transaction_quantity Float
+    transaction_type     String
+    userId               Int // Champ de clé étrangère vers User
+    user                 User     @relation(fields: [userId], references: [id]) // Relation avec User (many-to-one)
+    articleId            Int // Champ de clé étrangère vers Article
+    article              Article  @relation(fields: [articleId], references: [id]) // Utilisez le nom "article"
+}
+
+model Recette {
+    id                  Int       @id @default(autoincrement())
+    recette_name        String
+    recette_price       Float
+    recette_description String
+    articles            Article[]
+}
+
+model Category {
+    id                   Int       @id @default(autoincrement())
+    category_name        String    @unique
+    category_description String
+    article              Article[]
+}

@@ -12,8 +12,13 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      height: {
+        'screen-minus-64': 'calc(100vh - 64px)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('daisyui')
+  ],
 };
 export default config;
