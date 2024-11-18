@@ -12,34 +12,49 @@ model User {
     email        String        @unique
     password     String
     role         String
-    transactions Transaction[] // Relation avec Transaction (one-to-many)
+    transactions Transaction[] 
 }
 
 model Article {
-    id                  Int           @id @default(autoincrement())
-    article_name        String        @unique
+    id                  Int       @id @default(autoincrement())
+    article_name        String    @unique
     article_description String
     unit                String
     unit_price          Float
-    barcode             String
-    expiration_date     DateTime
-    article_quantity    Float
+    barcode             String    @unique
     quantity_min        Float
-    recettes            Recette[] // Relation vers Recette (many-to-many)
     categoryId          Int?
-    category            Category?     @relation(fields: [categoryId], references: [id])
-    transaction         Transaction[]
+    category            Category? @relation(fields: [categoryId], references: [id])
+    batches             Batch[]  
+    recettes            RecetteArticle[]
+
+    @@index([article_name])       
+}
+
+model Batch {
+    id              Int           @id @default(autoincrement())
+    articleId       Int
+    article         Article       @relation(fields: [articleId], references: [id])
+    expiration_date DateTime?     
+    quantity        Float        
+    status          String? 
+    transactions    Transaction[]
+
+    @@index([articleId])
+    @@index([expiration_date])
 }
 
 model Transaction {
-    id                   Int      @id @default(autoincrement())
+    id                   Int       @id @default(autoincrement())
     transaction_date     DateTime
     transaction_quantity Float
     transaction_type     String
-    userId               Int // Champ de clé étrangère vers User
-    user                 User     @relation(fields: [userId], references: [id]) // Relation avec User (many-to-one)
-    articleId            Int // Champ de clé étrangère vers Article
-    article              Article  @relation(fields: [articleId], references: [id]) // Utilisez le nom "article"
+    userId               Int
+    user                 User      @relation(fields: [userId], references: [id])
+    batchId              Int
+    batch                Batch     @relation(fields: [batchId], references: [id])
+
+    @@index([transaction_date])
 }
 
 model Recette {
@@ -47,12 +62,20 @@ model Recette {
     recette_name        String
     recette_price       Float
     recette_description String
-    articles            Article[]
+    articles            RecetteArticle[]
+}
+
+model RecetteArticle {
+    recetteId Int
+    articleId Int
+    recette   Recette @relation(fields: [recetteId], references: [id])
+    article   Article @relation(fields: [articleId], references: [id])
+
+    @@id([recetteId, articleId])  
 }
 
 model Category {
     id                   Int       @id @default(autoincrement())
     category_name        String    @unique
-    category_description String
     article              Article[]
 }

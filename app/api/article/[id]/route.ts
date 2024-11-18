@@ -15,6 +15,7 @@ export async function GET(request: Request, context: { params: { id: string } })
         // Rechercher l'article par ID
         const article = await prisma.article.findUnique({
             where: { id: numericId },
+            include:{batches:true}
         });
 
         if (!article) {
@@ -41,35 +42,28 @@ export async function PUT(request: Request, context: { params: { id: string } })
     console.log("Received data:", body);
 
     // Extraire `formData` des données
-    const { article_name, article_description, article_quantity, barcode, expiration_date, quantity_min, unit, unit_price,categoryId } = body || {}
+    const { article_name, article_description, barcode, quantity_min, unit, unit_price, categoryId } = body || {}
 
-    
+
     // Validation des champs pour éviter `undefined` ou `NaN`
     const updatedData = {
         article_name,
         article_description,
-        article_quantity: parseFloat(article_quantity),
         barcode,
-        expiration_date: new Date(expiration_date),
         quantity_min: parseFloat(quantity_min),
         unit,
         unit_price: parseFloat(unit_price),
         category: categoryId ? { connect: { id: parseInt(categoryId, 10) } } : undefined, // Mettre à jour la catégorie
     };
 
-    // Vérification de la validité de la date
-    if (updatedData.expiration_date && isNaN(updatedData.expiration_date.getTime())) {
-        return NextResponse.json({ error: "Invalid expiration date" }, { status: 400 });
-    }
-
     // Mettre à jour l'article dans la base de données
     try {
-        const updatedArticle = await prisma.article.update({
+        await prisma.article.update({
             where: { id: numericId },
             data: updatedData,
         });
 
-        return NextResponse.json({message:'Un article a été mis à jour'});
+        return NextResponse.json({ message: 'Un article a été mis à jour' });
     } catch (error) {
         console.error("Server error:", error);
         return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -77,7 +71,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
 }
 
 export async function DELETE(request: Request, context: { params: { id: string } }) {
-    const { id } = context.params;
+    const { id } = await context.params;
     const numericId = parseInt(id, 10);
 
     if (isNaN(numericId)) {
@@ -85,13 +79,39 @@ export async function DELETE(request: Request, context: { params: { id: string }
     }
 
     try {
-        const deletedArticle = await prisma.transaction.delete({
+        // Trouver tous les batches associés à cet article
+        const batches = await prisma.batch.findMany({
+            where: {
+                articleId: numericId,
+            },
+        });
+
+        // Extraire les IDs des batches
+        const batchIds = batches.map(batch => batch.id);
+
+        // Supprimer toutes les transactions associées aux batches de cet article
+        await prisma.transaction.deleteMany({
+            where: {
+                batchId: { in: batchIds },
+            },
+        });
+
+        // Supprimer tous les batches associés à cet article
+        await prisma.batch.deleteMany({
+            where: {
+                articleId: numericId,
+            },
+        });
+
+        // Supprimer l'article lui-même
+        const deletedArticle = await prisma.article.delete({
             where: { id: numericId },
         });
 
-        return NextResponse.json({ message: "Article supprimé avec succès", article: deletedArticle });
+        return NextResponse.json({ message: "Article, batches, and associated transactions deleted successfully", article: deletedArticle });
     } catch (error) {
         console.error("Server error:", error);
         return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 }
+

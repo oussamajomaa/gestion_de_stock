@@ -1,6 +1,6 @@
 'use client'
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // Importer usePathname
+import { usePathname, useRouter } from "next/navigation"; // Importer usePathname
 import { TfiPanel } from "react-icons/tfi";
 import { MdOutlineInventory } from "react-icons/md";
 import { GrTransaction } from "react-icons/gr";
@@ -12,17 +12,20 @@ import { IoMdLogOut } from "react-icons/io";
 
 export default function Sidebar() {
     const pathname = usePathname(); // Obtenir le chemin actuel
-
+    const router = useRouter()
     // Fonction utilitaire pour ajouter une classe active
-    const getLinkClass = (path:string) => {
-        // pathname === path ? "text-yellow-300 " : "text-white"
-        if (pathname === path) {
-            return "text-yellow-300"
-        }
-        
-        return "text-white"
-    }
+    const getLinkClass = (path:string) => pathname === path ? "text-yellow-300" : "text-white";
 
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+     // Si aucun token n'existe, afficher uniquement le formulaire de connexion
+    //  if (!token) {
+    //     return <Login />;
+    // }
+    const logout = () => {
+        localStorage.clear()
+        router.push('/login')
+    }
     return (
         <>
             <div className="h-16 bg-[#C3A348] flex justify-between items-center p-5 fixed top-0 w-full">
@@ -64,8 +67,8 @@ export default function Sidebar() {
                 </nav>
 
                 <div className="flex justify-center">
-                    <Link href="/" className="btn btn-outline text-white max-md:hidden">Déconnexion</Link>
-                    <Link href="/" className="md:hidden p-1 rounded-2xl text-white"><IoMdLogOut size={40} /></Link>
+                    <button className="btn btn-outline text-white max-md:hidden" onClick={logout}>Déconnexion</button>
+                    <button className="md:hidden p-1 rounded-2xl text-white" onClick={logout}><IoMdLogOut size={40} /></button>
                 </div>
             </aside>
         </>

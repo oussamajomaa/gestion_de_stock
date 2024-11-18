@@ -7,79 +7,166 @@ export async function GET() {
     try {
         const transactions = await prisma.transaction.findMany({
             include: {
-                article: true, // Assurez-vous d'inclure l'article
-                user: true     // Inclure aussi l'utilisateur si nécessaire
-            }
-        });
+                batch: {
+                    include: {
+                        article: true, // Inclure l'article associé au batch
+                    },
+                },
+            },
+            orderBy: {
+                transaction_date: "desc", // Trier par date de transaction en ordre décroissant (la plus récente en premier)
+            },
+        })
         return NextResponse.json(transactions)
     } catch (error) {
         return NextResponse.json(error)
     }
 }
 
-export async function POST(req: Request) {
+export async function POST(req:Request) {
     try {
-        const body = await req.json()
-        const { transaction_type, transaction_quantity, transaction_date, articleId, userId } = body || {};
+        const body = await req.json();
+        
+        const { transaction_type, userId, articleId, transaction_quantity, transaction_date, batch_expiration_date } = body;
 
-        console.log('Transaction data:', {
-            transaction_type,
-            transaction_quantity,
-            transaction_date,
-            articleId,
-            userId,
-        });
+        if (!transaction_type || !userId || !articleId || !transaction_quantity) {
+            return new Response(JSON.stringify({ error: "Invalid input" }), {
+                status: 400,
+            });
+        }
 
+        if (transaction_type === "Entrée") {
+            // Chercher un lot existant avec le même article et date d'expiration
+            let batch = await prisma.batch.findFirst({
+                where: {
+                    articleId,
+                    expiration_date: new Date(batch_expiration_date),
+                },
+            });
 
+            console.log(batch);
+            
 
-        // Récupérez l'article actuel pour obtenir sa quantité actuelle
-        const article = await prisma.article.findUnique({
-            where: { id: parseInt(articleId, 10) }
-        });
+            if (batch) {
+                // Mettre à jour la quantité du lot existant
+                batch = await prisma.batch.update({
+                    where: { id: batch.id },
+                    data: { quantity: batch.quantity + transaction_quantity },
+                });
+            } else {
+                // Créer un nouveau lot
+                batch = await prisma.batch.create({
+                    data: {
+                        articleId,
+                        expiration_date: new Date(batch_expiration_date),
+                        quantity:transaction_quantity,
+                        status: "active",
+                    },
+                });
+            }
 
-        if (!article) {
-            return NextResponse.json(
-                { error: "Article non trouvé." },
-                { status: 404 }
+            // Enregistrer la transaction
+            await prisma.transaction.create({
+                data: {
+                    transaction_date: new Date(transaction_date),
+                    transaction_quantity: transaction_quantity,
+                    transaction_type: "Entrée",
+                    userId,
+                    batchId: batch.id,
+                },
+            });
+
+            return new Response(JSON.stringify({ message: "Transaction entrée enregistrée avec succès" }), {
+                status: 200,
+            });
+        } else if (transaction_type === "Sortie") {
+            // Récupérer les lots avec l'article concerné, triés par date d'expiration
+            const batches = await prisma.batch.findMany({
+                where: { articleId },
+                orderBy: { expiration_date: "asc" },
+            });
+
+            // Vérifier si la quantité totale disponible est suffisante
+            const totalAvailableQuantity = batches.reduce(
+                (sum, batch) => sum + batch.quantity,
+                0
+            );
+
+            if (totalAvailableQuantity < transaction_quantity) {
+                return new Response(
+                    JSON.stringify({
+                        message: "Quantité insuffisante en stock",
+                    }),
+                    { status: 400 }
+                );
+            }
+
+            // Déduire la quantité des lots
+            let remainingQuantity = transaction_quantity;
+
+            for (const batch of batches) {
+                if (remainingQuantity <= 0) break;
+
+                if (batch.quantity >= remainingQuantity) {
+                    // Déduire la quantité du lot
+                    await prisma.batch.update({
+                        where: { id: batch.id },
+                        data: { quantity: batch.quantity - remainingQuantity },
+                    });
+
+                    // Enregistrer la transaction
+                    await prisma.transaction.create({
+                        data: {
+                            transaction_date: new Date(transaction_date),
+                            transaction_quantity: remainingQuantity,
+                            transaction_type: "Sortie",
+                            userId,
+                            batchId: batch.id,
+                        },
+                    });
+
+                    remainingQuantity = 0;
+                } else {
+                    let batch_qty = batch.quantity
+                    // Consommer entièrement ce lot
+                    await prisma.batch.update({
+                        where: { id: batch.id },
+                        data: { quantity: 0 },
+                    });
+
+                    // Enregistrer une transaction partielle
+                    if (batch_qty > 0) {
+                        await prisma.transaction.create({
+                            data: {
+                                transaction_date: new Date(transaction_date),
+                                transaction_quantity: batch.quantity,
+                                transaction_type: "Sortie",
+                                userId,
+                                batchId: batch.id,
+                            },
+                        });
+                    }
+
+                    remainingQuantity -= batch.quantity;
+                }
+            }
+
+            return new Response(
+                JSON.stringify({
+                    message: "Transaction sortie enregistrée avec succès",
+                }),
+                { status: 200 }
             );
         }
 
-        // Vérifier la quantité si la transaction est une "sortie"
-        if (transaction_type.toLowerCase() === "sortie" && transaction_quantity > article.article_quantity) {
-            return NextResponse.json(
-                { message: "La quantité de la transaction dépasse la quantité disponible." },
-                { status: 400 }
-            );
-        }
-
-        const newTransaction = await prisma.transaction.create({
-            data: {
-                transaction_type,
-                transaction_quantity: parseFloat(transaction_quantity),
-                transaction_date: new Date(transaction_date), // Assurez-vous que c'est bien une date
-                article: articleId ? { connect: { id: parseInt(articleId, 10) } } : undefined,
-                user: userId ? { connect: { id: parseInt(userId, 10) } } : undefined,
-            }
-        });
-
-        // Calculez la nouvelle quantité en fonction du type de transaction
-        const updateQuantity = transaction_type.toLowerCase() === 'sortie'
-            ? article.article_quantity - parseFloat(transaction_quantity)
-            : article.article_quantity + parseFloat(transaction_quantity)
-
-        // Mettez à jour la quantité de l'article
-        await prisma.article.update({
-            where: { id: articleId },
-            data: {
-                article_quantity: updateQuantity
-            }
-        })
-
-        return NextResponse.json({ message: 'Une transaction a été ajoutée avec succès' });
+        return new Response(
+            JSON.stringify({ error: "Type de transaction invalide" }),
+            { status: 400 }
+        );
     } catch (error) {
-        console.error('Erreur lors de la création de la transaction:', error);
-        return NextResponse.json(
-            { error: 'Une erreur est survenue lors de la création de la transaction.' },
+        console.error(error);
+        return new Response(
+            JSON.stringify({ error: "Erreur interne du serveur" }),
             { status: 500 }
         );
     }

@@ -5,27 +5,26 @@ import { useParams, useRouter } from "next/navigation";
 import { Article } from "@/types/article";
 import { IoIosArrowBack } from "react-icons/io";
 import Swal from 'sweetalert2';
-import ArticleForm from "@/components/ArticleForm";
 import { Category } from "@/types/category";
 import { FiSave } from "react-icons/fi";
 
 
 export default function page() {
-    const { id } = useParams()
-    const router = useRouter()
+    const { id } = useParams();
+    const router = useRouter();
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [article, setArticle] = useState<Article | null>(null);
+    const [batch, setBatch] = useState(null);
     const [formData, setFormData] = useState({
         article_name: "",
-		article_description: "",
-		article_quantity: 0,
-		barcode: "",
-		expiration_date: new Date().toISOString().split("T")[0],
-		quantity_min: 0,
-		unit: "",
-		unit_price: 0,
-		categoryId: "" as number | ""
+        article_description: "",
+        barcode: "",
+        // expiration_date: "",
+        quantity_min: 0,
+        unit: "",
+        unit_price: 0,
+        categoryId: "" as number | ""
     });
 
     // Récupère l'article existant pour pré-remplir le formulaire
@@ -34,36 +33,40 @@ export default function page() {
         if (response.ok) {
             const data = await response.json();
             setArticle(data);
-            console.log(data);
+            console.log(data)
 
+
+            // Mettez à jour formData avec les valeurs de data.article et data.batch
             setFormData({
                 article_name: data.article_name,
                 article_description: data.article_description,
-                article_quantity: data.article_quantity,
                 barcode: data.barcode,
-                expiration_date: new Date(data.expiration_date).toISOString().split("T")[0],
+                // expiration_date: batch.expiration_date ? new Date(batch.expiration_date).toISOString().split('T')[0] : "", // Assurez-vous que la date est bien formatée pour l'input
                 quantity_min: data.quantity_min,
                 unit: data.unit,
                 unit_price: data.unit_price,
-                categoryId: data.categoryId
+                categoryId: data.categoryId || ""
             });
         }
-    }
+    };
 
     const fetchCategories = async () => {
         const response = await fetch("/api/category"); // Remplacez par votre endpoint
         if (response.ok) {
             const data = await response.json();
             setCategories(data);
-            console.log(data);
-
         }
     };
 
     useEffect(() => {
-        fetchArticle()
-        fetchCategories()
-    }, [])
+        fetchArticle();
+        fetchCategories();
+    }, []);
+
+    // // Utilisez un useEffect pour surveiller les mises à jour de formData
+    // useEffect(() => {
+    //     console.log("formData updated:", formData);
+    // }, [formData]);
 
     const updateArticle = async () => {
         const response = await fetch(`/api/article/${id}`, {
@@ -72,28 +75,26 @@ export default function page() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(formData)
-        })
+        });
 
         if (response.ok) {
-            const data = await response.json()
-            router.push('/article')
-            // Swal.fire('Succès',data.message,"success");
+            const data = await response.json();
+            router.push('/article');
             Swal.fire({
                 html: `L'article <span style="color: red;">${formData.article_name}</span> a été mis à jour avec succès !`,
                 icon: "success",
-                
             });
         } else {
             Swal.fire('Erreur', "Une erreur est survenue lors de la mise à jour de l'article.", 'error');
         }
-    }
+    };
 
     // Gère les changements dans le formulaire
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData({
             ...formData,
-            [name]: name === "article_quantity" || name === "quantity_min" || name === "unit_price" || name === "category_id"
+            [name]: name === "article_quantity" || name === "quantity_min" || name === "unit_price" || name === "categoryId"
                 ? parseFloat(value)
                 : value
         });
@@ -105,6 +106,9 @@ export default function page() {
         updateArticle();
     };
 
+    if (!article ) {
+        return <div>Loading...</div>;
+    }
     return (
         <div className="h-[calc(100vh-104px)] flex items-center justify-center">
 
@@ -147,24 +151,13 @@ export default function page() {
 							<label className="block">Quantité minimale</label>
 							<input type="number" step="any" name="quantity_min" value={formData.quantity_min} onChange={handleChange} className="input input-bordered w-full" required />
 						</div>
-						<div>
-							<div className="mb-4">
-								<label className="block">Quantité</label>
-								<input type="number" step="any" name="article_quantity" value={formData.article_quantity} onChange={handleChange} className="input input-bordered w-full" required />
-							</div>
-						</div>
-					</div>
-
-					<div className="grid grid-cols-2 gap-2 ">
 						<div className="mb-4">
 							<label className="block">Code-barres</label>
 							<input type="text" name="barcode" value={formData.barcode} onChange={handleChange} className="input input-bordered w-full" required />
 						</div>
-						<div className="mb-4">
-							<label className="block">Date d'expiration</label>
-							<input type="date" name="expiration_date" value={formData.expiration_date.split('T')[0]} onChange={handleChange} className="input input-bordered w-full" required />
-						</div>
 					</div>
+
+				
 
 					<div className="grid grid-cols-2 gap-2 ">
 						<div className="mb-4">

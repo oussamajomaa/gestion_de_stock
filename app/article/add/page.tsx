@@ -15,9 +15,7 @@ export default function page() {
 	const [formData, setFormData] = useState({
 		article_name: "",
 		article_description: "",
-		article_quantity: 0,
 		barcode: "",
-		expiration_date: new Date().toISOString().split("T")[0],
 		quantity_min: 0,
 		unit: "",
 		unit_price: 0,
@@ -106,22 +104,13 @@ export default function page() {
 						</div>
 						<div>
 							<div className="mb-4">
-								<label className="block">Quantité</label>
-								<input type="number" name="article_quantity" value={formData.article_quantity} onChange={handleChange} className="input input-bordered w-full" required />
+								<label className="block">Code-barres</label>
+								<input type="text" name="barcode" value={formData.barcode} onChange={handleChange} className="input input-bordered w-full" required />
 							</div>
 						</div>
 					</div>
 
-					<div className="grid grid-cols-2 gap-2 ">
-						<div className="mb-4">
-							<label className="block">Code-barres</label>
-							<input type="text" name="barcode" value={formData.barcode} onChange={handleChange} className="input input-bordered w-full" required />
-						</div>
-						<div className="mb-4">
-							<label className="block">Date d'expiration</label>
-							<input type="date" name="expiration_date" value={formData.expiration_date.split('T')[0]} onChange={handleChange} className="input input-bordered w-full" required />
-						</div>
-					</div>
+					
 
 					<div className="grid grid-cols-2 gap-2 ">
 						<div className="mb-4">

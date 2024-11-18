@@ -21,6 +21,7 @@ export default function page() {
 		if (response.ok) {
 			const data = await response.json()
 			setArticles(data)
+			console.log(data)
 		}
 	}
 
@@ -68,37 +69,45 @@ export default function page() {
 		router.push("/article/add");
 	};
 
-	// Empêche la soumission par défaut et appelle `updateArticle`
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log(search);
-    };
+	// // Empêche la soumission par défaut et appelle `updateArticle`
+    // const handleSubmit = (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //     console.log(search);
+    // };
 
+	const handlSearch = () => {
+		setSearch('')
+	}
 	// Filtrage des articles en fonction du terme de recherche
 	const filteredArticles = articles.filter(article =>
 		article.article_name.toLowerCase().includes(search.toLowerCase())
 	);
 
+	const handleFixture = async() => {
+		const response = await fetch('/api/fixture')
+		const data = await response.json()
+		console.log(data)
+	}
+
 	return (
 		<div className="">
 			<div className="flex justify-between items-center mb-3 max-lg:items-start">
 				<div className="flex items-center gap-6 w-5/6 max-lg:flex-col max-lg:w-full max-lg:items-start">
-					<h1 className="text-2xl font-bold">Liste des Transactions</h1>
-					<form className=" flex items-center gap-3" onSubmit={handleSubmit}>
-						<input type="text" placeholder="chercher par nom d'artcile..." className="input input-bordered w-full" onChange={(e)=>setSearch(e.target.value)} />
-						<button className="btn"><FaSearch /></button>
-					</form>
+					<h1 className="text-2xl font-bold">Liste des Articles</h1>
+					<div className=" flex items-center gap-3">
+						<input type="text" placeholder="chercher par nom d'artcile..." className="input input-bordered w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
+						<button className="btn" onClick={handlSearch}>X</button>
+					</div>
 				</div>
 				<button className="rounded-md p-2 bg-blue-500 hover:bg-blue-600 text-white" onClick={handleAdd}><IoAdd size={24} /></button>
 			</div>
+			{/* <button onClick={handleFixture} className="btn btn-primary my-3">Fixture</button> */}
 			<table className="min-w-full bg-white border border-gray-300">
 				<thead>
 					<tr>
 						<td className="py-2 px-4 border-b font-bold">Nom</td>
-						{/* <td className="py-2 px-4 border-b font-bold">Description</td> */}
 						<td className="py-2 px-4 border-b font-bold">Quantité</td>
 						<td className="py-2 px-4 border-b font-bold">Code-barres</td>
-						<td className="py-2 px-4 border-b font-bold">Date d'expiration</td>
 						<td className="py-2 px-4 border-b font-bold">Quantité min</td>
 						<td className="py-2 px-4 border-b font-bold">Unité</td>
 						<td className="py-2 px-4 border-b font-bold">Prix unitaire</td>
@@ -110,10 +119,8 @@ export default function page() {
 					{filteredArticles.map(article => (
 						<tr key={article.id} className="hover:bg-gray-100">
 							<td className="py-2 px-4 border-b">{article.article_name}</td>
-							{/* <td className="py-2 px-4 border-b">{article.article_description}</td> */}
-							<td className="py-2 px-4 border-b">{article.article_quantity}</td>
+							<td className="py-2 px-4 border-b">{article.current_quantity}</td>
 							<td className="py-2 px-4 border-b">{article.barcode}</td>
-							<td className="py-2 px-4 border-b">{new Date(article.expiration_date).toLocaleDateString()}</td>
 							<td className="py-2 px-4 border-b">{article.quantity_min}</td>
 							<td className="py-2 px-4 border-b">{article.unit}</td>
 							<td className="py-2 px-4 border-b">{article.unit_price}</td>

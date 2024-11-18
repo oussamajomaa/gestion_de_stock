@@ -5,54 +5,40 @@ const prisma = new PrismaClient();
 
 export async function GET() {
     try {
-        // Créer une instance de la date d'aujourd'hui
-        // const today = new Date();
-
-        // Calculer la date 10 jours à partir d'aujourd'hui
-        // const targetDate = new Date(today.setDate(today.getDate() + 10));
-
-        // console.log(targetDate);
-        
-
-        // // Définir le début et la fin de la journée cible pour ignorer l'heure
-        // const startOfTargetDate = new Date(targetDate.setHours(0, 0, 0, 0));
-        // const endOfTargetDate = new Date(targetDate.setHours(23, 59, 59, 999));
-
-        // Définir le début de la journée d'aujourd'hui pour ignorer l'heure
-        const startOfToday = new Date();
-        startOfToday.setHours(0, 0, 0, 0);
-
-
-
-         // Calculer les dates limites
+        // Définir la date d'aujourd'hui
         const today = new Date();
+        today.setHours(0, 0, 0, 0); // Ignorer l'heure pour inclure toute la journée
+
+        // Définir la date de fin comme 10 jours après aujourd'hui
         const tenDaysLater = new Date();
         tenDaysLater.setDate(today.getDate() + 10);
+        tenDaysLater.setHours(23, 59, 59, 999); // Inclure toute la journée de fin
 
-        // Récupérer les articles dont la date d'expiration est entre aujourd'hui et dans 10 jours
-        const articles = await prisma.article.findMany({
+        // Récupérer les articles qui expirent dans les 10 prochains jours
+        const articlesExpiringSoon = await prisma.batch.findMany({
             where: {
                 expiration_date: {
                     gte: today,       // expiration_date >= aujourd'hui
                     lte: tenDaysLater // expiration_date <= aujourd'hui + 10 jours
                 }
-            }
+            },
+            include:{article:true}
         });
 
-         
-        // Requête pour récupérer les articles dont la date d'expiration est exactement `targetDate` (peu importe l'heure)
-        const articleExpired = await prisma.article.findMany({
+        // Récupérer les articles déjà expirés (expiration_date <= aujourd'hui)
+        const articlesExpired = await prisma.batch.findMany({
             where: {
                 expiration_date: {
-                    // gte: startOfTargetDate,  // Début de la journée cible
-                    lt: startOfToday      // Fin de la journée cible
-                },
+                    lte: today // expiration_date <= aujourd'hui
+                }
             },
+            include:{article:true}
         });
 
-        return NextResponse.json({articles,articleExpired});
+        // Retourner les deux listes d'articles
+        return NextResponse.json({ articlesExpiringSoon, articlesExpired });
     } catch (error) {
         console.error("Erreur lors de la récupération des articles:", error);
-        return NextResponse.json({ message: error });
+        return NextResponse.json({ message: "Erreur serveur lors de la récupération des articles." }, { status: 500 });
     }
 }

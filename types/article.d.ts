@@ -1,8 +1,10 @@
+import { Batch } from "@prisma/client"
+
 export type Article = {
     id: number
     article_description: string
     article_name: string
-    article_quantity: number
+    current_quantity: number
     barcode: string
     expiration_date: string // Utilisez `string` pour manipuler facilement les dates en affichage
     quantity_min: number
@@ -12,4 +14,5 @@ export type Article = {
     category: {
       category_name: string; // Représente le nom de la catégorie associée
     };
+
   }

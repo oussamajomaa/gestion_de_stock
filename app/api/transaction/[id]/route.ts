@@ -11,9 +11,16 @@ export async function GET(request: Request, context: { params: { id: string } })
             return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
         }
 
-        // Rechercher l'article par ID
+        // Rechercher la transaction par ID
         const transaction = await prisma.transaction.findUnique({
             where: { id: numericId },
+            include: {
+                batch: {
+                    include: {
+                        article: true, // Inclure les détails de l'article
+                    },
+                },
+            },
         });
 
         if (!transaction) {
@@ -28,142 +35,136 @@ export async function GET(request: Request, context: { params: { id: string } })
 }
 
 export async function PUT(request: Request, context: { params: { id: string } }) {
+    const { id } = await context.params; // Attente explicite de `context.params`
     try {
-        const { id } = context.params;
-        const numericId = parseInt(id, 10);
-        if (isNaN(numericId)) {
-            return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
-        }
-
-        // Lire les nouvelles données envoyées dans la requête
-        const body = await request.json();
-        console.log("Received body:", body);
-
-        const { transaction_type, transaction_quantity, transaction_date, articleId, userId } = body || {};
-
-        // Récupérez la transaction actuelle pour obtenir son ancienne quantité et type
-        const existingTransaction = await prisma.transaction.findUnique({
-            where: { id: numericId },
-        });
-
-        if (!existingTransaction) {
-            return NextResponse.json({ message: "Transaction non trouvée." }, { status: 404 });
-        }
-
-        // Récupérez l'article actuel pour obtenir sa quantité actuelle
-        const article = await prisma.article.findUnique({
-            where: { id: parseInt(articleId, 10) },
-            select: { article_quantity: true },
-        });
-
-        if (!article) {
-            return NextResponse.json({ message: "Article non trouvé." }, { status: 404 });
-        }
-
-        // Réajustez la quantité de l'article en fonction de l'ancienne transaction
-        let adjustedQuantity = article.article_quantity;
-
-        if (existingTransaction.transaction_type.toLowerCase() === "sortie") {
-            adjustedQuantity += existingTransaction.transaction_quantity;
-        } else {
-            adjustedQuantity -= existingTransaction.transaction_quantity;
-        }
-
-        // Vérifier la quantité si la nouvelle transaction est une "sortie"
-        if (transaction_type.toLowerCase() === "sortie" && transaction_quantity > adjustedQuantity) {
-            return NextResponse.json(
-                { message: "La quantité de la transaction dépasse la quantité disponible." },
-                { status: 400 }
-            );
-        }
-
-        // Mettez à jour la transaction avec les nouvelles données
-        const updatedTransaction = await prisma.transaction.update({
-            where: { id: numericId },
-            data: {
-                transaction_type,
-                transaction_quantity: parseFloat(transaction_quantity),
-                transaction_date: new Date(transaction_date),
-                article: articleId ? { connect: { id: parseInt(articleId, 10) } } : undefined,
-                user: userId ? { connect: { id: parseInt(userId, 10) } } : undefined,
-            },
-        });
-
-        // Recalculer la nouvelle quantité de l'article
-        const finalQuantity = transaction_type.toLowerCase() === "sortie"
-            ? adjustedQuantity - parseFloat(transaction_quantity)
-            : adjustedQuantity + parseFloat(transaction_quantity);
-
-        // Mettez à jour la quantité de l'article
-        await prisma.article.update({
-            where: { id: parseInt(articleId, 10) },
-            data: { article_quantity: finalQuantity },
-        });
-
-        return NextResponse.json({ message: "La transaction a été mise à jour." });
-    } catch (error) {
-        console.error("Erreur lors de la mise à jour de la transaction:", error);
-        return NextResponse.json(
-            { message: "Une erreur est survenue lors de la mise à jour de la transaction." },
-            { status: 500 }
-        );
-    }
-}
-
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-    try {
-        const { id } = context.params
-        const numericId = parseInt(id, 10);
-
+        const numericId = parseInt(id, 10); // Convertit l'ID en nombre
         if (isNaN(numericId)) {
             return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
         }
 
-        // Récupérez la transaction actuelle pour obtenir son ancienne quantité et type
+        const body = await request.json();
+        const { transaction_quantity, transaction_date } = body;
+
+        // Récupérer la transaction existante avec son lot associé
         const existingTransaction = await prisma.transaction.findUnique({
             where: { id: numericId },
+            include: {
+                batch: true, // Inclure le lot pour ajuster les quantités
+            },
         });
 
         if (!existingTransaction) {
-            return NextResponse.json({ message: "Transaction non trouvée." }, { status: 404 });
+            return new Response(JSON.stringify({ error: "Transaction introuvable" }), { status: 404 });
         }
 
-        const articleId = existingTransaction.articleId
+        const previousQuantity = existingTransaction.transaction_quantity;
+        const batch = existingTransaction.batch;
 
-        // Récupérez l'article actuel pour obtenir sa quantité actuelle
-        const article = await prisma.article.findUnique({
-            where: { id: articleId },
-            select: { article_quantity: true },
+        // Ajuster la quantité dans le batch selon le type de transaction
+        if (batch) {
+            if (existingTransaction.transaction_type === "Entrée") {
+                // Si transaction est "Entrée", soustraire l'ancienne quantité et ajouter la nouvelle
+                const quantityAdjustment = transaction_quantity - previousQuantity;
+                await prisma.batch.update({
+                    where: { id: batch.id },
+                    data: {
+                        quantity: batch.quantity + quantityAdjustment,
+                    },
+                });
+            } else if (existingTransaction.transaction_type === "Sortie") {
+                // Si transaction est "Sortie", ajouter l'ancienne quantité et soustraire la nouvelle
+                const quantityAdjustment = previousQuantity - transaction_quantity;
+                await prisma.batch.update({
+                    where: { id: batch.id },
+                    data: {
+                        quantity: batch.quantity + quantityAdjustment,
+                    },
+                });
+            }
+        }
+
+        // Mettre à jour la transaction
+        const updatedTransaction = await prisma.transaction.update({
+            where: { id: numericId },
+            data: {
+                ...(transaction_quantity !== undefined && {
+                    transaction_quantity,
+                }),
+                ...(transaction_date && {
+                    transaction_date: new Date(transaction_date),
+                }),
+            },
         });
 
-        if (!article) {
-            return NextResponse.json({ message: "Article non trouvé." }, { status: 404 });
+
+        return NextResponse.json({
+            message: "Transaction mise à jour avec succès",
+            transaction: updatedTransaction,
+        });
+    } catch (error) {
+        console.error(error);
+        return new Response(JSON.stringify({ error: "Erreur interne du serveur" }), { status: 500 });
+    }
+}
+
+export async function DELETE(request: Request, context: { params: { id: string } }) {
+    const { id } = context.params;
+    try {
+        const numericId = parseInt(id, 10); // Convertir l'ID en nombre
+        if (isNaN(numericId)) {
+            return new Response(JSON.stringify({ error: "Invalid ID" }), { status: 400 });
         }
 
-        // Réajustez la quantité de l'article en fonction de l'ancienne transaction
-        let adjustedQuantity = article.article_quantity;
-
-        if (existingTransaction.transaction_type.toLowerCase() === "sortie") {
-            adjustedQuantity += existingTransaction.transaction_quantity;
-        } else {
-            adjustedQuantity -= existingTransaction.transaction_quantity;
-        }
-
-        // Mettez à jour la quantité de l'article
-        await prisma.article.update({
-            where: { id: articleId },
-            data: { article_quantity: adjustedQuantity },
+        // Récupérer la transaction existante
+        const transaction = await prisma.transaction.findUnique({
+            where: { id: numericId },
+            include: {
+                batch: true, // Inclure les informations du lot associé
+            },
         });
 
+        if (!transaction) {
+            return new Response(JSON.stringify({ error: "Transaction introuvable" }), { status: 404 });
+        }
 
-        const deletedArticle = await prisma.transaction.delete({
+        // Vérifier si la suppression peut être effectuée
+        if (transaction.transaction_type === "Entrée") {
+            // Si c'est une entrée, vérifier que la quantité dans le lot après suppression ne deviendrait pas négative
+            if (transaction.batch.quantity < transaction.transaction_quantity) {
+                return new Response(
+                    JSON.stringify({ message: "La suppression entraînerait une quantité négative dans le lot" }),
+                    { status: 400 }
+                );
+            }
+
+            // Réduire la quantité pour une entrée
+            await prisma.batch.update({
+                where: { id: transaction.batchId },
+                data: {
+                    quantity: transaction.batch.quantity - transaction.transaction_quantity,
+                },
+            });
+        } else if (transaction.transaction_type === "Sortie") {
+            // Augmenter la quantité pour une sortie
+            await prisma.batch.update({
+                where: { id: transaction.batchId },
+                data: {
+                    quantity: transaction.batch.quantity + transaction.transaction_quantity,
+                },
+            });
+        }
+
+        // Supprimer la transaction
+        await prisma.transaction.delete({
             where: { id: numericId },
         });
 
-        return NextResponse.json({ message: "Transaction supprimée avec succès" });
+        return NextResponse.json({ message: "Transaction supprimée avec succès" }, { status: 200 });
     } catch (error) {
-        console.error("Server error:", error);
-        return NextResponse.json({ message: "Server error" }, { status: 500 });
+        console.error("Erreur lors de la suppression de la transaction :", error);
+        return new Response(
+            JSON.stringify({ error: "Erreur interne du serveur" }),
+            { status: 500 }
+        );
     }
-
 }
