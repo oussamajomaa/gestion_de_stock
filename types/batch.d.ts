@@ -4,6 +4,7 @@ export type Batch = {
     expiration_date: string // Utilisez `string` pour manipuler facilement les dates en affichage
     transactionId: number
     inventaire: String
+    daysRemaining:number
     article: {
       article_name: string; // Représente le nom de la catégorie associée
     };

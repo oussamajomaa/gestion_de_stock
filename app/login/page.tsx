@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { FaRegEye } from "react-icons/fa6";
 import { FaRegEyeSlash } from "react-icons/fa";
+import Swal from 'sweetalert2';
 
 export default function Login() {
 	const [email, setEmail] = useState('')
@@ -17,38 +18,28 @@ export default function Login() {
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault()
-		localStorage.setItem('token', 'osm')
-		router.push("/")
-		// try {
-		// 	const response = await fetch(`/api/login`, {
-		// 		method: 'POST',
-		// 		headers: {
-		// 			'Content-Type': 'application/json',
-		// 		},
-		// 		body: JSON.stringify({ email, password }),
-		// 		credentials:'include'
+		// localStorage.setItem('token', 'osm')
+		// router.push("/")
+		try {
+			const response = await fetch(`/api/login`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ email, password }),
+			})
 
-		// 	})
-
-		// 	if (response.ok) {
-		// 		const data = await response.json();
-		// 		localStorage.setItem('id', data.id)
-		// 		localStorage.setItem('token', data.token)
-		// 		localStorage.setItem('role', data.role)
-		// 		localStorage.setItem('username', data.username)
-		// 		localStorage.setItem('email', data.email)
-
-		// 		// onLogin(token)
-		// 		setLogged(true)
-		// 	} else {
-		// 		const data = await response.json()
-		// 		setisError(true)
-		// 		setMessage(data.error)
-
-		// 	}
-		// } catch (error) {
-		// 	console.error('Network error:', error);
-		// }
+			const data = await response.json();
+			if (response.ok) {
+				localStorage.setItem('id', data.id)
+				localStorage.setItem('token', data.token)
+				localStorage.setItem('role', data.role)
+				localStorage.setItem('email', data.email)
+				router.push('/')
+			} else Swal.fire('', data.message, data.icon);
+		} catch (error) {
+			console.error('Network error:', error);
+		}
 	}
 
 	const toggleShow = () => {

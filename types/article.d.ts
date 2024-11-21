@@ -9,10 +9,14 @@ export type Article = {
     expiration_date: string // Utilisez `string` pour manipuler facilement les dates en affichage
     quantity_min: number
     unit: string
+    totalQuantity:number
     unit_price: number
     category_id: number
     category: {
       category_name: string; // Représente le nom de la catégorie associée
     };
+    batches:[{
+      expiration_date:string
+    }]
 
   }

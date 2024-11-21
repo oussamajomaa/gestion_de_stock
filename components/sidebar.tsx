@@ -30,7 +30,10 @@ export default function Sidebar() {
         <>
             <div className="h-16 bg-[#C3A348] flex justify-between items-center p-5 fixed top-0 w-full">
                 <h1 className="text-3xl font-bold max-md:text-[16px]">GESTION DE STOCK</h1>
-                <h2 className="text-xl font-medium max-md:text-[12px]">Bonjour osmjom@gmail.com</h2>
+                <div>
+                    <h2 className=" font-medium max-md:text-[12px]">{localStorage.getItem('email')}</h2>
+                    <h2 className=" font-medium max-md:text-[12px]">Rôle: {localStorage.getItem('role')}</h2>
+                </div>
             </div>
             <aside className="w-[266px] h-screen-minus-64 fixed top-[64px] bg-[#192340] p-3 flex flex-col justify-between text-white max-md:w-[100px] transition-all duration-300 ease-in-out">
                 <nav className="flex flex-col gap-6 pt-10 max-md:hidden">
@@ -52,9 +55,9 @@ export default function Sidebar() {
                     <Link href="/rapport" className={`flex items-center gap-3 ${getLinkClass("/rapport")}`}>
                         <TbReportAnalytics size={24}/> Génération des rapports
                     </Link>
-                    <Link href="/user" className={`flex items-center gap-3 ${getLinkClass("/user")}`}>
+                    {localStorage.getItem('role')=== 'admin' && <Link href="/user" className={`flex items-center gap-3 ${getLinkClass("/user")}`}>
                         <FaUsers size={24}/> Gestion des utilisateurs
-                    </Link>  
+                    </Link>}  
                 </nav>
                 <nav className="flex flex-col items-center gap-6 pt-10 md:hidden md:bg-slate-200 transition-transform duration-300 ease-in-out transform hover:scale-105">
                     <Link href="/" className={getLinkClass("/")}><TfiPanel size={40}/></Link>
