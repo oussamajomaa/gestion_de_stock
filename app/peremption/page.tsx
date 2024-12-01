@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { BiSolidDetail } from "react-icons/bi"
 import { FaEdit } from "react-icons/fa"
 import { MdDelete } from "react-icons/md"
+import Swal from 'sweetalert2';
 
 export default function page() {
 	const [articlesExpiringSoon,setArticlesExpiringSoon] = useState<Batch[]>([])
@@ -23,20 +24,33 @@ export default function page() {
 		fetchArticle()
 	},[])
 
-	const handleDetail = (id:number) => {
+	const handleDelete = async (id:number) => {
+		const result = await Swal.fire({
+			// title: 'Êtes-vous sûr ?',
+			text: `Vous êtes sûr de supprimer cet article?`,
+			icon: 'error',
+			showCancelButton: true,
+			confirmButtonColor: '#d33',
+			cancelButtonColor: '#3085d6',
+			confirmButtonText: 'Oui, supprimer !',
+			cancelButtonText: 'Annuler'
+		});
 
+		if (result.isConfirmed) {
+			const response = await fetch(`/api/peremption/${id}`, { method: 'DELETE' });
+			const data = await response.json()
+			if (response.ok) {
+				Swal.fire('', data.message, 'success');
+			} else {
+				Swal.fire('', data.message, 'error');
+			}
+			fetchArticle()
+		}
 	}
 
-	const handleDelete = (id:number) => {
-		
-	}
-
-	const handleEdit = (id:number) => {
-		
-	}
 	return (
 		<div className="flex gap-3  max-lg:flex-col">
-			<div className="w-full">
+			{/* <div className="w-full">
 				
 				<h2 className="text-2xl font-bold">Artciles périmés dans moins de 10 jours</h2>
 				<table className="min-w-full ">
@@ -62,7 +76,7 @@ export default function page() {
 						))}
 					</tbody>
 				</table>
-			</div>
+			</div> */}
 			<div className="w-full ">
 			<h2 className="text-2xl font-bold">Artciles périmés</h2>
 				<table className="min-w-full ">
@@ -81,7 +95,7 @@ export default function page() {
 								<td className="py-2 px-4 border-b">{article.quantity}</td>
 								<td className="py-2 px-4 border-b">{new Date(article.expiration_date).toLocaleDateString()}</td>
 								<td className="py-2 px-4 border-b flex space-x-2">
-									<button onClick={() => handleEdit(article.id)} className="bg-yellow-500 text-white px-2 py-1 rounded"><FaEdit /></button>
+									{/* <button onClick={() => handleEdit(article.id)} className="bg-yellow-500 text-white px-2 py-1 rounded"><FaEdit /></button> */}
 									<button onClick={() => handleDelete(article.id)} className="bg-red-500 text-white px-2 py-1 rounded"><MdDelete /></button>
 								</td>
 							</tr>

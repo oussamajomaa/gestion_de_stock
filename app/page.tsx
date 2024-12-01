@@ -29,11 +29,11 @@ export default function Home() {
 
 	}
 
-	const xAxisSupplied = articleToBeSupplied.map(article => article.article_name)
-	const seriesSupplied = articleToBeSupplied.map((article) => ({
-		value: article.totalQuantity,
-		unit: article.batches[0].expiration_date.split('T')[0], // Inclure l'unité pour chaque article
-	}));
+	// const xAxisSupplied = articleToBeSupplied.map(article => article.article_name)
+	// const seriesSupplied = articleToBeSupplied.map((article) => ({
+	// 	value: article.totalQuantity,
+	// 	unit: article.batches[0].expiration_date.split('T')[0], // Inclure l'unité pour chaque article
+	// }));
 
 	const xAxisConsumed = articlesConsumed.map(article => article.article_name)
 	const seriesConsumed = articlesConsumed.map((article) => ({
