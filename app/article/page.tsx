@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import { fetchArticles, deleteArticle } from "@/services/articleService";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { BiSolidDetail } from "react-icons/bi";
@@ -8,25 +9,31 @@ import { Article } from "@/types/article";
 import { IoAdd } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
-import { FaSearch } from "react-icons/fa";
-
+import { exportToPDF } from "@/services/toPdf";
+import { FaRegFilePdf } from "react-icons/fa6";
 
 export default function page() {
 	const [articles, setArticles] = useState<Article[]>([])
-	const [search,setSearch] = useState('')
+	const [search, setSearch] = useState('')
 	const router = useRouter()
-	const fetchArticles = async () => {
-		const response = await fetch('api/article')
 
-		if (response.ok) {
-			const data = await response.json()
+	const toPDF = () => {
+		const table = document.getElementById("article");
+		exportToPDF(table, 'article')
+	};
+
+	const getArticles = async () => {
+		try {
+			const data = await fetchArticles()
 			setArticles(data)
 			console.log(data)
+		} catch (error) {
+			console.error(error);
 		}
 	}
 
 	useEffect(() => {
-		fetchArticles()
+		getArticles()
 	}, [])
 
 	const handleDelete = async (id: number, article_name: string) => {
@@ -42,13 +49,11 @@ export default function page() {
 		});
 
 		if (result.isConfirmed) {
-			const response = await fetch(`/api/article/${id}`, { method: 'DELETE' });
-
-			if (response.ok) {
-				setArticles(articles.filter(article => article.id !== id));
-				Swal.fire('Supprimé!', "L'article a été supprimé avec succès.", 'success');
-			} else {
-				Swal.fire('Erreur', "Une erreur est survenue lors de la suppression de l'article.", 'error');
+			try {
+				await deleteArticle(id);
+				setArticles(prev => prev.filter(article => article.id !== id));
+			} catch (error) {
+				console.error(error);
 			}
 		}
 	};
@@ -69,12 +74,6 @@ export default function page() {
 		router.push("/article/add");
 	};
 
-	// // Empêche la soumission par défaut et appelle `updateArticle`
-    // const handleSubmit = (e: React.FormEvent) => {
-    //     e.preventDefault();
-    //     console.log(search);
-    // };
-
 	const handlSearch = () => {
 		setSearch('')
 	}
@@ -83,26 +82,38 @@ export default function page() {
 		article.article_name.toLowerCase().includes(search.toLowerCase())
 	);
 
-	const handleFixture = async() => {
-		const response = await fetch('/api/fixture')
-		const data = await response.json()
-		console.log(data)
-	}
+	// const handleFixture = async () => {
+	// 	const response = await fetch('/api/fixture')
+	// 	const data = await response.json()
+	// 	console.log(data)
+	// }
 
 	return (
 		<div className="">
-			<div className="flex justify-between items-center mb-3 max-lg:items-start">
-				<div className="flex items-center gap-6 w-5/6 max-lg:flex-col max-lg:w-full max-lg:items-start">
-					<h1 className="text-2xl font-bold">Liste des Articles</h1>
-					<div className=" flex items-center gap-3">
-						<input type="text" placeholder="chercher par nom d'artcile..." className="input input-bordered w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
-						<button className="btn" onClick={handlSearch}>X</button>
+			<div className="flex justify-between items-center ">
+				<div className="flex justify-between items-center mb-3 max-lg:items-start w-2/3">
+					<div className="flex items-center gap-6 w-5/6 max-lg:flex-col max-lg:w-full max-lg:items-start">
+						<h1 className="text-2xl font-bold">Liste des Articles</h1>
+						<div className=" flex items-center gap-3">
+							<input type="text" placeholder="chercher par nom d'artcile..." className="input input-bordered w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
+							<button className="btn" onClick={handlSearch}>X</button>
+						</div>
 					</div>
 				</div>
-				<button className="rounded-md p-2 bg-blue-500 hover:bg-blue-600 text-white" onClick={handleAdd}><IoAdd size={24} /></button>
+				{/* <button onClick={handleFixture} className="btn btn-primary my-3">Fixture</button> */}
+				<div className="flex justify-between items-center gap-5">
+
+					<button className="rounded-md p-2 bg-blue-500 hover:bg-blue-600 text-white" onClick={handleAdd}><IoAdd size={24} /></button>
+					<button
+						onClick={toPDF}
+						className=" p-2 bg-red-500 text-white rounded"
+						title="Exporter en pdf"
+					>
+						<FaRegFilePdf size={24} />
+					</button>
+				</div>
 			</div>
-			{/* <button onClick={handleFixture} className="btn btn-primary my-3">Fixture</button> */}
-			<table className="min-w-full bg-white border border-gray-300">
+			<table className="min-w-full bg-white border border-gray-300" id="article">
 				<thead>
 					<tr>
 						<td className="py-2 px-4 border-b font-bold">Nom</td>
@@ -112,12 +123,12 @@ export default function page() {
 						<td className="py-2 px-4 border-b font-bold">Unité</td>
 						<td className="py-2 px-4 border-b font-bold">Prix unitaire</td>
 						<td className="py-2 px-4 border-b font-bold">Catégorie</td>
-						<td className="py-2 px-4 border-b font-bold">Actions</td>
+						<th className="py-2 px-4 border-b font-bold">Actions</th>
 					</tr>
 				</thead>
 				<tbody>
 					{filteredArticles.map(article => (
-						<tr key={article.id} className="hover:bg-gray-100">
+						<tr key={article.id} className="hover:bg-gray-100" data-testid={`row-${article.id}`}>
 							<td className="py-2 px-4 border-b">{article.article_name}</td>
 							<td className="py-2 px-4 border-b">{article.current_quantity}</td>
 							<td className="py-2 px-4 border-b">{article.barcode}</td>
@@ -125,10 +136,10 @@ export default function page() {
 							<td className="py-2 px-4 border-b">{article.unit}</td>
 							<td className="py-2 px-4 border-b">{article.unit_price}</td>
 							<td className="py-2 px-4 border-b">{article.category ? article.category.category_name : 'null'}</td>
-							<td className="py-2 px-4 border-b flex space-x-2">
-								<button onClick={() => handleDetail(article.id)} className="bg-gray-500 text-white px-2 py-1 rounded"><BiSolidDetail /></button>
-								<button onClick={() => handleEdit(article.id)} className="bg-yellow-500 text-white px-2 py-1 rounded"><FaEdit /></button>
-								<button onClick={() => handleDelete(article.id, article.article_name)} className="bg-red-500 text-white px-2 py-1 rounded"><MdDelete /></button>
+							<td className="py-2 px-4 border-b flex justify-around">
+								<button onClick={() => handleDetail(article.id)} className="bg-gray-500 text-white px-2 py-1 rounded" aria-label="Details"><BiSolidDetail /></button>
+								<button onClick={() => handleEdit(article.id)} className="bg-yellow-500 text-white px-2 py-1 rounded" aria-label="Edit"><FaEdit /></button>
+								<button onClick={() => handleDelete(article.id, article.article_name)} className="bg-red-500 text-white px-2 py-1 rounded" aria-label={`Delete ${article.article_name}`}><MdDelete /></button>
 							</td>
 						</tr>
 					))}

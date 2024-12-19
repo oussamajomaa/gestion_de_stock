@@ -23,14 +23,6 @@ export async function DELETE(request: Request, context: { params: { id: string }
 
         const today = new Date(); // Date actuelle
 
-        // await prisma.batch.deleteMany({
-        //     where:{
-        //         quantity:0,
-        //         expiration_date:{
-        //             lt:today
-        //         }
-        //     }
-        // })
         return NextResponse.json({ message: "Articles supprimés avec succès" }, { status: 200 });
         // return new Response(JSON.stringify({ message: "Batch deleted successfully" }), { status: 200 });
     } catch (error) {

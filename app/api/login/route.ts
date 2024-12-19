@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
-	// try {
+	try {
 		// Parse le corps de la requête
 		const body = await req.json();
 		const { email, password } = body;
@@ -44,8 +44,8 @@ export async function POST(req: Request) {
 			},
 			{ status: 200 }
 		);
-	// } catch (error) {
-	// 	console.error("Error during login:", error);
-	// 	return NextResponse.json({ message: "An unexpected error occurred",icon:"error" }, { status: 500 });
-	// }
+	} catch (error) {
+		console.error("Error during login:", error);
+		return NextResponse.json({ message: "An unexpected error occurred",icon:"error" }, { status: 500 });
+	}
 }

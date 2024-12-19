@@ -12,7 +12,6 @@ export default function Page() {
 		article_description: "",
 		article_quantity: 0,
 		barcode: "",
-		expiration_date: new Date().toISOString().split("T")[0],
 		quantity_min: 0,
 		unit: "",
 		unit_price: 0,
@@ -31,7 +30,6 @@ export default function Page() {
                 article_description: data.article_description,
                 article_quantity: data.article_quantity,
                 barcode: data.barcode,
-                expiration_date: new Date(data.expiration_date).toISOString().split("T")[0],
                 quantity_min: data.quantity_min,
                 unit: data.unit,
                 unit_price: data.unit_price,
@@ -75,12 +73,7 @@ export default function Page() {
                             <label className="block">Quantité minimale</label>
                             <input type="number" name="quantity_min" readOnly value={article.quantity_min} className="input input-bordered w-full" required />
                         </div>
-                        <div>
-                            <div className="mb-4">
-                                <label className="block">Quantité</label>
-                                <input type="number" name="article_quantity" readOnly value={article.article_quantity} className="input input-bordered w-full" required />
-                            </div>
-                        </div>
+                        
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 ">
@@ -88,10 +81,7 @@ export default function Page() {
                             <label className="block">Code-barres</label>
                             <input type="text" name="barcode" readOnly value={article.barcode} className="input input-bordered w-full" required />
                         </div>
-                        <div className="mb-4">
-                            <label className="block">Date d'expiration</label>
-                            <input type="date" name="expiration_date" readOnly value={article.expiration_date.split("T")[0]} className="input input-bordered w-full" required />
-                        </div>
+                     
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 ">

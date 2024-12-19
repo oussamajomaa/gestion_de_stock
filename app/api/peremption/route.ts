@@ -30,6 +30,9 @@ export async function GET() {
             where: {
                 expiration_date: {
                     lte: today // expiration_date <= aujourd'hui
+                },
+                quantity:{
+                    gt:0
                 }
             },
             include:{article:true}

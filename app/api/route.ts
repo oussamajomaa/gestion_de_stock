@@ -43,11 +43,18 @@ export async function GET() {
                 expiration_date: {
                     gte: today,       // expiration_date >= aujourd'hui
                     lte: tenDaysLater // expiration_date <= aujourd'hui + 10 jours
+                },
+                quantity: {
+                    gt:0
                 }
+            
             },
+            // orderBy:{
+            //         expiration_date:'asc'
+            // },
             include: { article: true }
         });
-
+        
         // Ajouter le calcul des jours restants
         const batchesWithDaysRemaining = articlesExpiringSoon.map((batch) => {
             const expirationDate = new Date(batch.expiration_date!); // Convertir en objet Date si nécessaire

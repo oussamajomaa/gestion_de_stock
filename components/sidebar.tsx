@@ -49,12 +49,12 @@ export default function Sidebar() {
                     <Link href="/peremption" className={`flex items-center gap-3 ${getLinkClass("/peremption")}`}>
                         <FcExpired size={24}/> Gestion date de péremption
                     </Link>
-                    <Link href="/recette" className={`flex items-center gap-3 ${getLinkClass("/recette")}`}>
+                    {/* <Link href="/recette" className={`flex items-center gap-3 ${getLinkClass("/recette")}`}>
                         <MdFastfood size={24}/> Gestion de recette
-                    </Link>
-                    <Link href="/rapport" className={`flex items-center gap-3 ${getLinkClass("/rapport")}`}>
+                    </Link> */}
+                    {/* <Link href="/rapport" className={`flex items-center gap-3 ${getLinkClass("/rapport")}`}>
                         <TbReportAnalytics size={24}/> Génération des rapports
-                    </Link>
+                    </Link> */}
                     {localStorage.getItem('role')=== 'admin' && <Link href="/user" className={`flex items-center gap-3 ${getLinkClass("/user")}`}>
                         <FaUsers size={24}/> Gestion des utilisateurs
                     </Link>}  
@@ -64,7 +64,7 @@ export default function Sidebar() {
                     <Link href="/article" className={getLinkClass("/article")}><MdOutlineInventory size={40}/></Link>
                     <Link href="/transaction" className={getLinkClass("/transaction")}><GrTransaction size={40}/></Link>
                     <Link href="/peremption" className={getLinkClass("/peremption")}><FcExpired size={40}/></Link>
-                    <Link href="/recette" className={getLinkClass("/recette")}><MdFastfood size={40}/></Link>
+                    {/* <Link href="/recette" className={getLinkClass("/recette")}><MdFastfood size={40}/></Link> */}
                     <Link href="/rapport" className={getLinkClass("/rapport")}><TbReportAnalytics size={40}/></Link>
                     <Link href="/user" className={getLinkClass("/user")}><FaUsers size={40}/></Link>  
                 </nav>

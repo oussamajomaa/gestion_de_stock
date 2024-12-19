@@ -1,61 +1,74 @@
 'use client'
 
-import { Article } from "@/types/article"
-import { Batch } from "@/types/batch"
-import { useEffect, useState } from "react"
-import { BiSolidDetail } from "react-icons/bi"
-import { FaEdit } from "react-icons/fa"
-import { MdDelete } from "react-icons/md"
-import Swal from 'sweetalert2';
+// Importation des types, hooks React et bibliothèques nécessaires
+import { Batch } from "@/types/batch" // TypeScript : Définition du type Batch
+import { useEffect, useState } from "react" // Hooks pour la gestion de l'état et des effets
+import { MdDelete } from "react-icons/md" // Icône de suppression
+import Swal from 'sweetalert2'; // Bibliothèque pour les popups/alertes
 
 export default function page() {
-	const [articlesExpiringSoon,setArticlesExpiringSoon] = useState<Batch[]>([])
-	const [articlesExpired,setArticlesExpired] = useState<Batch[]>([])
-	const fetchArticle = async() => {
+	// Déclare un état local pour stocker la liste des articles périmés
+	const [articlesExpired, setArticlesExpired] = useState<Batch[]>([])
+
+	// Fonction pour récupérer les articles périmés depuis l'API
+	const fetchArticle = async () => {
+		// Envoi d'une requête GET à l'endpoint `/api/peremption`
 		const response = await fetch('/api/peremption')
-		const data = await response.json()
-		setArticlesExpiringSoon(data.articlesExpiringSoon)
+		const data = await response.json() // Conversion de la réponse en JSON
+
+		// Mise à jour de l'état local avec les données reçues
 		setArticlesExpired(data.articlesExpired)
-		
-		// setArticleExpired(data.articleExpired)
 	}
 
-	useEffect(()=>{
+	// `useEffect` s'exécute une fois lors du montage du composant
+	// Il déclenche la récupération des articles périmés
+	useEffect(() => {
 		fetchArticle()
-	},[])
+	}, [])
 
-	const handleDelete = async (id:number) => {
+	// Fonction pour gérer la suppression d'un article périmé
+	const handleDelete = async (id: number) => {
+		// Affiche une boîte de dialogue de confirmation
 		const result = await Swal.fire({
-			// title: 'Êtes-vous sûr ?',
 			text: `Vous êtes sûr de supprimer cet article?`,
-			icon: 'error',
-			showCancelButton: true,
-			confirmButtonColor: '#d33',
-			cancelButtonColor: '#3085d6',
-			confirmButtonText: 'Oui, supprimer !',
-			cancelButtonText: 'Annuler'
+			icon: 'error', // Icône d'erreur pour la suppression
+			showCancelButton: true, // Affiche le bouton "Annuler"
+			confirmButtonColor: '#d33', // Couleur du bouton "Confirmer"
+			cancelButtonColor: '#3085d6', // Couleur du bouton "Annuler"
+			confirmButtonText: 'Oui, supprimer !', // Texte du bouton "Confirmer"
+			cancelButtonText: 'Annuler' // Texte du bouton "Annuler"
 		});
 
+		// Si l'utilisateur confirme la suppression
 		if (result.isConfirmed) {
+			// Envoi d'une requête DELETE à l'API avec l'ID de l'article
 			const response = await fetch(`/api/peremption/${id}`, { method: 'DELETE' });
-			const data = await response.json()
+			const data = await response.json(); // Récupère le message de l'API
+
+			// Affiche une notification de succès ou d'erreur en fonction de la réponse
 			if (response.ok) {
-				Swal.fire('', data.message, 'success');
+				Swal.fire('', data.message, 'success'); // Message de succès
 			} else {
-				Swal.fire('', data.message, 'error');
+				Swal.fire('', data.message, 'error'); // Message d'erreur
 			}
-			fetchArticle()
+
+			// Recharge la liste des articles périmés après la suppression
+			fetchArticle();
 		}
 	}
 
+	// Rendu du composant
 	return (
-		<div className="flex gap-3  max-lg:flex-col">
-			{/* <div className="w-full">
+		<div className="flex gap-3 max-lg:flex-col">
+			{/* Section principale contenant la liste des articles périmés */}
+			<div className="w-full">
+				<h2 className="text-2xl font-bold">Articles périmés</h2>
 				
-				<h2 className="text-2xl font-bold">Artciles périmés dans moins de 10 jours</h2>
-				<table className="min-w-full ">
+				{/* Tableau pour afficher les articles périmés */}
+				<table className="min-w-full">
 					<thead>
 						<tr>
+							{/* En-têtes des colonnes */}
 							<td className="py-2 px-4 border-b font-bold">Nom</td>
 							<td className="py-2 px-4 border-b font-bold">Quantité</td>
 							<td className="py-2 px-4 border-b font-bold">Date d'expiration</td>
@@ -63,47 +76,29 @@ export default function page() {
 						</tr>
 					</thead>
 					<tbody>
-						{articlesExpiringSoon.map(article => (
-							<tr key={article.id} className="hover:bg-gray-100">
-								<td className="py-2 px-4 border-b">{article.article?.article_name}</td>
-								<td className="py-2 px-4 border-b">{article.quantity}</td>
-								<td className="py-2 px-4 border-b">{new Date(article.expiration_date).toLocaleDateString()}</td>
-								<td className="py-2 px-4 border-b flex space-x-2">
-									<button onClick={() => handleEdit(article.id)} className="bg-yellow-500 text-white px-2 py-1 rounded"><FaEdit /></button>
-									<button onClick={() => handleDelete(article.id)} className="bg-red-500 text-white px-2 py-1 rounded"><MdDelete /></button>
-								</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
-			</div> */}
-			<div className="w-full ">
-			<h2 className="text-2xl font-bold">Artciles périmés</h2>
-				<table className="min-w-full ">
-					<thead>
-						<tr>
-							<td className="py-2 px-4 border-b font-bold">Nom</td>
-							<td className="py-2 px-4 border-b font-bold">Quantité</td>
-							<td className="py-2 px-4 border-b font-bold">Date d'expiration</td>
-							<td className="py-2 px-4 border-b font-bold">Actions</td>
-						</tr>
-					</thead>
-					<tbody>
+						{/* Parcours de la liste des articles périmés pour afficher chaque article */}
 						{articlesExpired.map(article => (
 							<tr key={article.id} className="hover:bg-gray-100">
+								{/* Nom de l'article */}
 								<td className="py-2 px-4 border-b">{article.article?.article_name}</td>
+								{/* Quantité disponible */}
 								<td className="py-2 px-4 border-b">{article.quantity}</td>
+								{/* Date d'expiration formatée en fonction de la locale */}
 								<td className="py-2 px-4 border-b">{new Date(article.expiration_date).toLocaleDateString()}</td>
+								{/* Bouton pour supprimer l'article */}
 								<td className="py-2 px-4 border-b flex space-x-2">
-									{/* <button onClick={() => handleEdit(article.id)} className="bg-yellow-500 text-white px-2 py-1 rounded"><FaEdit /></button> */}
-									<button onClick={() => handleDelete(article.id)} className="bg-red-500 text-white px-2 py-1 rounded"><MdDelete /></button>
+									<button
+										onClick={() => handleDelete(article.id)} // Appelle `handleDelete` avec l'ID de l'article
+										className="bg-red-500 text-white px-2 py-1 rounded"
+									>
+										<MdDelete /> {/* Icône de suppression */}
+									</button>
 								</td>
 							</tr>
 						))}
 					</tbody>
 				</table>
 			</div>
-			
 		</div>
 	)
 }

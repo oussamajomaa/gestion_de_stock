@@ -7,15 +7,16 @@ import { IoIosArrowBack } from "react-icons/io";
 import Swal from 'sweetalert2';
 import { Category } from "@/types/category";
 import { FiSave } from "react-icons/fi";
+import { fetchArticleById } from "@/services/articleService";
+import ArticleForm from "@/components/ArticleForm";
 
 
 export default function page() {
     const { id } = useParams();
     const router = useRouter();
-
+    
     const [categories, setCategories] = useState<Category[]>([]);
     const [article, setArticle] = useState<Article | null>(null);
-    const [batch, setBatch] = useState(null);
     const [formData, setFormData] = useState({
         article_name: "",
         article_description: "",
@@ -41,7 +42,6 @@ export default function page() {
                 article_name: data.article_name,
                 article_description: data.article_description,
                 barcode: data.barcode,
-                // expiration_date: batch.expiration_date ? new Date(batch.expiration_date).toISOString().split('T')[0] : "", // Assurez-vous que la date est bien formatée pour l'input
                 quantity_min: data.quantity_min,
                 unit: data.unit,
                 unit_price: data.unit_price,
@@ -63,10 +63,6 @@ export default function page() {
         fetchCategories();
     }, []);
 
-    // // Utilisez un useEffect pour surveiller les mises à jour de formData
-    // useEffect(() => {
-    //     console.log("formData updated:", formData);
-    // }, [formData]);
 
     const updateArticle = async () => {
         const response = await fetch(`/api/article/${id}`, {
@@ -122,57 +118,12 @@ export default function page() {
                 </button>
                 <h1 className="text-3xl font-bold mb-3">Editer un article</h1>
 
-                {/* <ArticleForm handleSubmit={handleSubmit} handleChange={handleChange} formData={formData} categories={categories} /> */}
-                <form onSubmit={handleSubmit}>
-					<div className="mb-4">
-						<label className="block">Nom de l'article</label>
-						<input type="text" name="article_name" value={formData.article_name} onChange={handleChange} className="input input-bordered w-full" required />
-					</div>
-					<div className="mb-4">
-						<label className="block">Description</label>
-						<textarea name="article_description" value={formData.article_description} onChange={handleChange} className="textarea textarea-bordered w-full" />
-					</div>
-
-					{/* Sélecteur de Catégorie */}
-					<div className="mb-4">
-						<label className="block">Catégorie</label>
-						<select name="categoryId" value={formData.categoryId || ""} onChange={handleChange} className="select select-bordered w-full" required>
-							<option value="">Sélectionnez une catégorie</option>
-							{categories.map(category => (
-								<option key={category.id} value={category.id}>
-									{category.category_name}
-								</option>
-							))}
-						</select>
-					</div>
-
-					<div className="grid grid-cols-2 gap-2 ">
-						<div className="mb-4">
-							<label className="block">Quantité minimale</label>
-							<input type="number" step="any" name="quantity_min" value={formData.quantity_min} onChange={handleChange} className="input input-bordered w-full" required />
-						</div>
-						<div className="mb-4">
-							<label className="block">Code-barres</label>
-							<input type="text" name="barcode" value={formData.barcode} onChange={handleChange} className="input input-bordered w-full" required />
-						</div>
-					</div>
-
-				
-
-					<div className="grid grid-cols-2 gap-2 ">
-						<div className="mb-4">
-							<label className="block">Unité</label>
-							<input type="text" name="unit" value={formData.unit} onChange={handleChange} className="input input-bordered w-full" required />
-						</div>
-						<div className="mb-4">
-							<label className="block">Prix unitaire</label>
-							<input type="number" step="any" name="unit_price" value={formData.unit_price} onChange={handleChange} className="input input-bordered w-full" required />
-						</div>
-					</div>
-					<button type="submit" className="flex gap-2 bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition duration-200 mb-3">
-						<FiSave size={24} /> Sauvegarder
-					</button>
-				</form>
+                <ArticleForm 
+                    onSubmit={handleSubmit}
+                    onChange={handleChange}
+                    formData={formData}
+                    categories={categories}
+                />
             </div>
             ) : (
                 <p>Chargement des données de l'article...</p>
