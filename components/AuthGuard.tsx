@@ -1,39 +1,35 @@
-'use client'
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { ReactNode } from "react";
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
 type AuthGuardProps = {
-    children: ReactNode;
+    children: React.ReactNode;
 };
 
 export default function AuthGuard({ children }: AuthGuardProps) {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // null = état initial
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null); // État initial
     const router = useRouter();
-    const pathname = usePathname(); // Vérifier la route actuelle
+    const pathname = usePathname(); // Récupérer la route actuelle
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const token = localStorage.getItem("token");
-
-            // Si la route est /login, ne pas appliquer AuthGuard
-            if (pathname === "/login") {
-                setIsAuthenticated(null); // Ne pas gérer l'authentification sur /login
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('token');
+            if (pathname === '/login') {
+                setIsAuthenticated(null); // Pas de vérification sur /login
                 return;
             }
 
-            // Vérifier si l'utilisateur est authentifié
             if (!token) {
                 setIsAuthenticated(false);
-                router.push("/login"); // Rediriger vers /login si non connecté
+                router.replace('/login'); // Remplace plutôt que push pour éviter un historique inutile
             } else {
                 setIsAuthenticated(true);
             }
         }
-    }, [router, pathname]);
+    }, [pathname, router]);
 
-    // Afficher un spinner pendant la vérification
-    if (isAuthenticated === null && pathname !== "/login") {
+    if (isAuthenticated === null && pathname !== '/login') {
+        // Afficher un spinner pendant la vérification
         return (
             <div className="flex justify-center items-center h-screen">
                 <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
@@ -42,10 +38,9 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     }
 
     // Si utilisateur non authentifié et pas sur /login, ne rien afficher
-    if (!isAuthenticated && pathname !== "/login") {
-        return null;
+    if (isAuthenticated === false) {
+        return null; // Pas d'affichage si non connecté
     }
 
-    // Rendre les enfants si authentifié
-    return <>{children}</>;
+    return <>{children}</>; // Afficher les enfants si authentifié
 }

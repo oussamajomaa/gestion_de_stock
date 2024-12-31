@@ -1,31 +1,35 @@
-'use client'
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation"; // Importer usePathname
-import { TfiPanel } from "react-icons/tfi";
-import { MdOutlineInventory } from "react-icons/md";
-import { GrTransaction } from "react-icons/gr";
-import { FcExpired } from "react-icons/fc";
-import { MdFastfood } from "react-icons/md";
-import { TbReportAnalytics } from "react-icons/tb";
-import { FaUsers } from "react-icons/fa";
-import { IoMdLogOut } from "react-icons/io";
+'use client';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { TfiPanel } from 'react-icons/tfi';
+import { MdOutlineInventory } from 'react-icons/md';
+import { GrTransaction } from 'react-icons/gr';
+import { FcExpired } from 'react-icons/fc';
+import { FaUsers } from 'react-icons/fa';
+import { IoMdLogOut } from 'react-icons/io';
+import { useEffect, useState } from 'react';
+import { TbReportAnalytics } from 'react-icons/tb';
 
 export default function Sidebar() {
-    const pathname = usePathname(); // Obtenir le chemin actuel
-    const router = useRouter()
-    // Fonction utilitaire pour ajouter une classe active
-    const getLinkClass = (path:string) => pathname === path ? "text-yellow-300" : "text-white";
+    const pathname = usePathname();
+    const router = useRouter();
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const [userEmail, setUserEmail] = useState<string | null>(null);
 
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setUserRole(localStorage.getItem('role'));
+            setUserEmail(localStorage.getItem('email'));
+        }
+    }, []);
 
-     // Si aucun token n'existe, afficher uniquement le formulaire de connexion
-    //  if (!token) {
-    //     return <Login />;
-    // }
     const logout = () => {
-        localStorage.clear()
-        router.push('/login')
-    }
+        localStorage.clear();
+        router.push('/login');
+    };
+
+    const getLinkClass = (path: string) =>
+        pathname === path ? 'text-yellow-300' : 'text-white';
     return (
         <>
             <div className="h-16 bg-[#C3A348] flex justify-between items-center p-5 fixed top-0 w-full">

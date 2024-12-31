@@ -1,36 +1,32 @@
-'use client'; // Ajoutez ce flag car vous utiliserez des hooks côté client
-import Sidebar from "@/components/sidebar";
-import "./globals.css";
-import AuthGuard from "@/components/AuthGuard";
-import { usePathname } from "next/navigation"; // Utilisez usePathname
+'use client';
+import Sidebar from '@/components/sidebar';
+import './globals.css';
+import AuthGuard from '@/components/AuthGuard';
+import { usePathname } from 'next/navigation';
 
 export default function RootLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) {
-  const pathname = usePathname(); // Récupère la route actuelle
+    const pathname = usePathname();
 
-  // Si l'utilisateur est sur /login, afficher uniquement le formulaire de connexion
-  if (pathname === "/login") {
+    if (pathname === '/login') {
+        return (
+            <html lang="en">
+                <body>{children}</body>
+            </html>
+        );
+    }
+
     return (
-      <html lang="en">
-        <body>{children}</body>
-      </html>
+        <html lang="en">
+            <body>
+                <AuthGuard>
+                    <Sidebar />
+                    <div className="ml-[266px] mt-[64px] p-5 max-md:ml-[100px]">{children}</div>
+                </AuthGuard>
+            </body>
+        </html>
     );
-  }
-
-  // Sinon, protéger l'accès avec AuthGuard et afficher le Sidebar
-  return (
-    <html lang="en">
-      <body>
-        <AuthGuard>
-          <Sidebar />
-          <div className="ml-[266px] mt-[64px] p-5 max-md:ml-[100px]">
-            {children}
-          </div>
-        </AuthGuard>
-      </body>
-    </html>
-  );
 }

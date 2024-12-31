@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { quantity } from "echarts/types/src/util/number.js";
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma';
+
+// const prisma = new PrismaClient()
 export async function GET() {
     try {
         const articles = await prisma.article.findMany({
