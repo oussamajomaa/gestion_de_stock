@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 
 // const prisma = new PrismaClient()
 export async function GET() {
-    try {
+    // try {
         const articles = await prisma.article.findMany({
             include: {
                 batches: {
@@ -117,7 +117,7 @@ export async function GET() {
 
         return NextResponse.json({ articleToBeSupplied, articlesExpired, batchesWithDaysRemaining, articlesConsumed });
 
-    } catch (error) {
+    // } catch (error) {
 
-    }
+    // }
 }

@@ -6,11 +6,10 @@ import { createArticle } from "@/services/articleService";
 import { useRouter } from "next/navigation";
 import { IoIosArrowBack } from "react-icons/io";
 import { Category } from "@/types/category";
-import { FiSave } from "react-icons/fi";
 import Swal from "sweetalert2";
 import ArticleForm from "@/components/ArticleForm";
 
-export default function page() {
+export default function AddArticle() {
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [formData, setFormData] = useState({
 		article_name: "",
@@ -27,7 +26,6 @@ export default function page() {
 		if (response.ok) {
 			const data = await response.json();
 			setCategories(data);
-			console.log(data);
 
 		}
 	};
@@ -43,29 +41,23 @@ export default function page() {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		try {
-			const payload = {
-				...formData,
-				quantity_min: Number(formData.quantity_min), // Conversion explicite en nombre
-				unit_price: Number(formData.unit_price), // Conversion explicite en nombre
-				categoryId: Number(formData.categoryId), // Conversion explicite en nombre
-			};
-	
-			await createArticle(payload);
-			router.push('/article');
-			Swal.fire({
-				html: `L'article <span style="color: red;">${formData.article_name}</span> a été ajouté avec succès !`,
-				icon: 'success',
-			});
-			console.log('Swal.fire called with:', {
-				html: `L'article <span style="color: red;">${formData.article_name}</span> a été ajouté avec succès !`,
-				icon: 'success',
-			});
-		} catch (error) {
-			Swal.fire('Erreur', "Une erreur est survenue lors de l'ajout d'un article.", 'error');
-		}
+
+		const payload = {
+			...formData,
+			quantity_min: Number(formData.quantity_min), // Conversion explicite en nombre
+			unit_price: Number(formData.unit_price), // Conversion explicite en nombre
+			categoryId: Number(formData.categoryId), // Conversion explicite en nombre
+		};
+
+		await createArticle(payload);
+		router.push('/article');
+		Swal.fire({
+			html: `L'article <span style="color: red;">${formData.article_name}</span> a été ajouté avec succès !`,
+			icon: 'success',
+		});
+
 	};
-	
+
 
 	return (
 		<div className="h-[calc(100vh-104px)] flex items-center">
@@ -79,13 +71,12 @@ export default function page() {
 				</button>
 				<h1 className="text-3xl font-bold mb-3">Ajouter un article</h1>
 
-				{/* <ArticleForm handleSubmit={handleSubmit} handleChange={handleChange} formData={formData} categories={categories}/> */}
 				<ArticleForm
-                formData={formData}
-                categories={categories}
-                onChange={handleChange}
-                onSubmit={handleSubmit}
-            />
+					formData={formData}
+					categories={categories}
+					onChange={handleChange}
+					onSubmit={handleSubmit}
+				/>
 			</div>
 		</div>
 	);

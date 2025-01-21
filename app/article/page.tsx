@@ -12,7 +12,7 @@ import Swal from 'sweetalert2';
 import { exportToPDF } from "@/services/toPdf";
 import { FaRegFilePdf } from "react-icons/fa6";
 
-export default function page() {
+export default function Page() {
 	const [articles, setArticles] = useState<Article[]>([])
 	const [search, setSearch] = useState('')
 	const router = useRouter()
@@ -26,7 +26,6 @@ export default function page() {
 		try {
 			const data = await fetchArticles()
 			setArticles(data)
-			console.log(data)
 		} catch (error) {
 			console.error(error);
 		}
@@ -60,7 +59,6 @@ export default function page() {
 
 	const handleEdit = (id: number) => {
 		// Redirige vers la page d'édition ou ouvre un modal
-		console.log(`Edit article with id ${id}`)
 		router.push(`/article/${id}/edit`)
 	}
 
@@ -81,12 +79,6 @@ export default function page() {
 	const filteredArticles = articles.filter(article =>
 		article.article_name.toLowerCase().includes(search.toLowerCase())
 	);
-
-	// const handleFixture = async () => {
-	// 	const response = await fetch('/api/fixture')
-	// 	const data = await response.json()
-	// 	console.log(data)
-	// }
 
 	return (
 		<div className="">

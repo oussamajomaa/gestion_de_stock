@@ -6,7 +6,7 @@ import { useEffect, useState } from "react" // Hooks pour la gestion de l'état 
 import { MdDelete } from "react-icons/md" // Icône de suppression
 import Swal from 'sweetalert2'; // Bibliothèque pour les popups/alertes
 
-export default function page() {
+export default function Page() {
 	// Déclare un état local pour stocker la liste des articles périmés
 	const [articlesExpired, setArticlesExpired] = useState<Batch[]>([])
 
@@ -71,7 +71,7 @@ export default function page() {
 							{/* En-têtes des colonnes */}
 							<td className="py-2 px-4 border-b font-bold">Nom</td>
 							<td className="py-2 px-4 border-b font-bold">Quantité</td>
-							<td className="py-2 px-4 border-b font-bold">Date d'expiration</td>
+							<td className="py-2 px-4 border-b font-bold">Date d&apos;expiration</td>
 							<td className="py-2 px-4 border-b font-bold">Actions</td>
 						</tr>
 					</thead>

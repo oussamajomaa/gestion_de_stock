@@ -68,7 +68,7 @@ export default function Page() {
 		});
 
 		if (result.isConfirmed) {
-			try {
+			// try {
 				const response = await fetch(`/api/transaction/${id}`, { method: 'DELETE' });
 				const data = await response.json();
 
@@ -78,9 +78,9 @@ export default function Page() {
 				} else {
 					Swal.fire('', data.message || 'Échec de la suppression', 'error');
 				}
-			} catch (error) {
-				Swal.fire('', 'Une erreur est survenue lors de la suppression', 'error');
-			}
+			// } catch (error) {
+			// 	Swal.fire('', 'Une erreur est survenue lors de la suppression', 'error');
+			// }
 		}
 	};
 
@@ -135,7 +135,7 @@ export default function Page() {
 			<table className="min-w-full bg-white border border-gray-300" id="transaction">
 				<thead>
 					<tr>
-						<td className="py-2 px-4 border-b font-bold">Nom d'article</td>
+						<td className="py-2 px-4 border-b font-bold">Nom d`&apos;article</td>
 						<td className="py-2 px-4 border-b font-bold">Type de transaction</td>
 						<td className="py-2 px-4 border-b font-bold">Quantité</td>
 						<td className="py-2 px-4 border-b font-bold">Date de transaction</td>

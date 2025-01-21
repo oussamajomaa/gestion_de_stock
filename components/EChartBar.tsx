@@ -1,9 +1,9 @@
 import ReactECharts from 'echarts-for-react';
-
+// import { EChartsOption } from 'echarts';
 interface EChartProps {
-    xAxis: string[]; // Les données pour l'axe X
-    series: { value: number; unit: string }[]; // Les données pour la série
-  }
+  xAxis: string[]; // Les données pour l'axe X
+  series: { value: number; unit: string }[]; // Les données pour la série
+}
 
 const EChartComponent = ({xAxis,series}:EChartProps) => {
   const options = {
@@ -28,12 +28,12 @@ const EChartComponent = ({xAxis,series}:EChartProps) => {
           label: {
             show: true,
             position: 'top', // Affiche les labels sur le dessus des barres
-            formatter: (params: any) =>
+            formatter: (params: { value: number; dataIndex: number }) =>
               `${params.value} ${series[params.dataIndex].unit}`, // Label avec l'unité
           },
         itemStyle: {
             // Ajoutez les couleurs de fond ici
-            color: function (params:any) {
+            color: function (params:{dataIndex: number}) {
                 // Exemple de couleur personnalisée basée sur l'index de la barre
                 const colorList = ['#5C7BD9', '#9FE080', '#bb0055', '#EE6666', '#FFDC60'];
                 return colorList[params.dataIndex % colorList.length];

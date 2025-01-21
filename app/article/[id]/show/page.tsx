@@ -4,18 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Article } from "@/types/article";
 import { IoIosArrowBack } from "react-icons/io";
-import ArticleForm from "@/components/ArticleForm";
 
 export default function Page() {
-    const [formData, setFormData] = useState({
-		article_name: "",
-		article_description: "",
-		article_quantity: 0,
-		barcode: "",
-		quantity_min: 0,
-		unit: "",
-		unit_price: 0,
-	});
 
     const { id } = useParams(); // Récupère l'ID de l'article
     const [article, setArticle] = useState<Article | null>(null);
@@ -25,15 +15,7 @@ export default function Page() {
         if (response.ok) {
             const data = await response.json();
             setArticle(data); // Met à jour l'état avec les données de l'article
-            setFormData({
-                article_name: data.article_name,
-                article_description: data.article_description,
-                article_quantity: data.article_quantity,
-                barcode: data.barcode,
-                quantity_min: data.quantity_min,
-                unit: data.unit,
-                unit_price: data.unit_price,
-            });
+         
         } else {
             console.error("Erreur lors de la récupération de l'article");
         }
@@ -56,10 +38,10 @@ export default function Page() {
                     <IoIosArrowBack size={24} className="mr-2" />
                     Retour
                 </button>
-                <h1 className="text-3xl font-bold mb-3">Détails de l'Article</h1>
+                <h1 className="text-3xl font-bold mb-3">Détails de l&apos;Article</h1>
                
                     <div className="mb-4">
-                        <label className="block">Nom de l'article</label>
+                        <label className="block">Nom de l&apos;article</label>
                         <input type="text" name="article_name" readOnly value={article.article_name} className="input input-bordered w-full" required />
                     </div>
 
@@ -93,7 +75,7 @@ export default function Page() {
                             <label className="block">Prix unitaire</label>
                             <input type="number" name="unit_price" readOnly value={article.unit_price} className="input input-bordered w-full" required />
                         </div>
-                    </div>
+                    </div>console
 
                 
             </div>

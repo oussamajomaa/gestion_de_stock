@@ -7,21 +7,11 @@ import { GrTransaction } from 'react-icons/gr';
 import { FcExpired } from 'react-icons/fc';
 import { FaUsers } from 'react-icons/fa';
 import { IoMdLogOut } from 'react-icons/io';
-import { useEffect, useState } from 'react';
 import { TbReportAnalytics } from 'react-icons/tb';
 
 export default function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
-    const [userRole, setUserRole] = useState<string | null>(null);
-    const [userEmail, setUserEmail] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            setUserRole(localStorage.getItem('role'));
-            setUserEmail(localStorage.getItem('email'));
-        }
-    }, []);
 
     const logout = () => {
         localStorage.clear();
@@ -45,7 +35,7 @@ export default function Sidebar() {
                         <TfiPanel size={24}/> Tableau de bord
                     </Link>
                     <Link href="/article" className={`flex items-center gap-3 ${getLinkClass("/article")}`}>
-                        <MdOutlineInventory size={24}/> Gestion d'inventaire
+                        <MdOutlineInventory size={24}/> Gestion d&apos;inventaire
                     </Link>
                     <Link href="/transaction" className={`flex items-center gap-3 ${getLinkClass("/transaction")}`}>
                         <GrTransaction size={24}/> Gestion de transaction

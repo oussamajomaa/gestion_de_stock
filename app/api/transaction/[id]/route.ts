@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from '@/lib/prisma';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export async function GET(request: Request, context: { params: { id: string } }) {
-    const { id } = await context.params
+export async function GET(request: Request, { params} :any) {
+    const { id } = await params
     try {
         const numericId = parseInt(id, 10); // Convertit l'ID en nombre
         if (isNaN(numericId)) {
@@ -33,8 +34,8 @@ export async function GET(request: Request, context: { params: { id: string } })
     }
 }
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
-    const { id } = await context.params; // Attente explicite de `context.params`
+export async function PUT(request: Request, { params} :any) {
+    const { id } = await params; // Attente explicite de `context.params`
     try {
         const numericId = parseInt(id, 10); // Convertit l'ID en nombre
         if (isNaN(numericId)) {
@@ -106,8 +107,8 @@ export async function PUT(request: Request, context: { params: { id: string } })
     }
 }
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-    const { id } = context.params;
+export async function DELETE(request: Request, { params} :any) {
+    const { id } = params;
     try {
         const numericId = parseInt(id, 10); // Convertir l'ID en nombre
         if (isNaN(numericId)) {

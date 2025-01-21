@@ -10,7 +10,7 @@ export default function Register() {
 	const [password, setPassword] = useState('')
 	const [showPw, setShowPw] = useState(false)
 	const [role, setRole] = useState('')
-	const [isLoading, setIsLoading] = useState(false);
+	// const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter()
 
 	const handleAddUser = async (e: FormEvent) => {
@@ -48,7 +48,7 @@ export default function Register() {
 	}
 	return (
 		<div className=" ">
-			{isLoading && <span className="loading loading-bars loading-lg text-accent block m-auto"></span>}
+			{/* {isLoading && <span className="loading loading-bars loading-lg text-accent block m-auto"></span>} */}
 			<div className="p-5 shadow-2xl w-[500px] m-auto rounded-md">
 
 				<div className='flex flex-col gap-5 justify-center items-center  '>

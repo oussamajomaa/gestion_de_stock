@@ -9,7 +9,7 @@ const EChartComponent = ({ xAxis, series }: EChartProps) => {
   const options = {
     tooltip: {
       trigger: 'item',
-      formatter: (params: any) =>
+      formatter: (params: { name:string, value: number; dataIndex: number, percent:number }) =>
         `${params.name}: ${params.value} ${series[params.dataIndex].unit} (${params.percent}%)`, // Affiche la quantité, l'unité et le pourcentage
     },
     legend: {
@@ -31,7 +31,7 @@ const EChartComponent = ({ xAxis, series }: EChartProps) => {
         //     `${params.name}\n${params.value} ${series[params.dataIndex].unit} (${params.percent}%)`, // Affiche la quantité, unité et pourcentage sur les segments
         // },
         itemStyle: {
-          color: function (params: any) {
+          color: function (params: {dataIndex: number}) {
             const colorList = ['#5C7BD9', '#9FE080', '#ccaadd', '#EE6666', '#FFDC60'];
             return colorList[params.dataIndex % colorList.length];
           },

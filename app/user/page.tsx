@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import { MdDelete } from "react-icons/md";
 
-export default function page() {
+export default function Page() {
 	// **État pour stocker les utilisateurs récupérés depuis l'API**
 	const [users, setUsers] = useState<User[]>([]);
 
@@ -17,19 +17,32 @@ export default function page() {
 	// **Fonction pour récupérer les utilisateurs via une requête API**
 	const fetchUser = async () => {
 		try {
-			// Effectue une requête pour obtenir la liste des utilisateurs
-			const response = await fetch('/api/user');
+			const token = localStorage.getItem('token');
+	
+			if (!token) {
+				throw new Error("Token not found");
+			}
+	
+			const response = await fetch('/api/user', {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${token}`, // Ajouter le token
+					'Content-Type': 'application/json',
+				},
+			});
+	
 			if (response.ok) {
 				const data = await response.json();
-				setUsers(data); // Met à jour l'état avec les données récupérées
+				setUsers(data);
 			} else {
-				console.error("Failed to fetch transactions");
+				console.error("Failed to fetch users:", await response.json());
 			}
 		} catch (error) {
-			// Gestion des erreurs réseau
-			console.error("Error fetching transactions:", error);
+			console.error("Error fetching users:", error);
 		}
 	};
+	
+	
 
 	// **Récupère les utilisateurs lors du montage du composant**
 	useEffect(() => {

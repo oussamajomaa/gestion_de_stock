@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { IoAdd } from "react-icons/io5"
 
-export default function page() {
+export default function Page() {
 	const [search,setSearch] = useState('')
 
 	const handlSearch = async () => {

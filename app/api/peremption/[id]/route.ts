@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from '@/lib/prisma';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-    const { id } = await context.params;
+export async function DELETE(request: Request, {params}: any) {
+    const { id } = await params;
     try {
         const numericId = parseInt(id, 10); // Convertir l'ID en nombre
         if (isNaN(numericId)) {
@@ -20,7 +21,7 @@ export async function DELETE(request: Request, context: { params: { id: string }
             }
         });
 
-        const today = new Date(); // Date actuelle
+        // const today = new Date(); // Date actuelle
 
         return NextResponse.json({ message: "Articles supprimés avec succès" }, { status: 200 });
         // return new Response(JSON.stringify({ message: "Batch deleted successfully" }), { status: 200 });

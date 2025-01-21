@@ -46,7 +46,6 @@ export default function Page() {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         formData.userId = 1;  // Assign user ID as needed
-        console.log(formData);
 
         const response = await fetch('/api/transaction', {
             method: 'POST',
@@ -54,7 +53,6 @@ export default function Page() {
             body: JSON.stringify(formData),
         });
         const data = await response.json();
-        console.log(response);
         
         if (!response.ok) {
             Swal.fire('', data.message, 'error');
@@ -88,7 +86,7 @@ export default function Page() {
                 <form onSubmit={handleSubmit}>
                     {/* Article Selector */}
                     <div className="mb-4">
-                        <label className="block">Nom d'article</label>
+                        <label className="block">Nom d&apos;article</label>
                         <Select
                             options={articleOptions}
                             onChange={(selectedOption) =>
@@ -97,7 +95,7 @@ export default function Page() {
                                         name: 'articleId',
                                         value: selectedOption ? selectedOption.value : '',
                                     },
-                                } as any)
+                                } as React.ChangeEvent<HTMLInputElement>)
                             }
                             value={articleOptions.find(option => option.value === formData.articleId) || null}
                             placeholder="Rechercher un article"
@@ -133,7 +131,7 @@ export default function Page() {
                     {/* Expiration Date for Batch */}
                     {formData.transaction_type === "Entrée" && (
                         <div className="mb-4">
-                            <label className="block">Date d'expiration du lot</label>
+                            <label className="block">Date d`&apos;expiration du lot</label>
                             <input
                                 type="date"
                                 name="batch_expiration_date"

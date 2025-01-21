@@ -1,5 +1,4 @@
 import React from 'react'
-import { Transaction } from "@/types/transaction";
 import { Article } from '@/types/article';
 import { FiSave } from "react-icons/fi";
 import Select from 'react-select';
@@ -50,10 +49,9 @@ export default function TransactionForm({ handleSubmit, handleChange, formData, 
             </div>
 
 
-
             {/* Sélecteur de Catégorie */}
             <div className="mb-4">
-                <label className="block">Nom d'article</label>
+                <label className="block">Nom d&apos;article</label>
                 <Select
                     options={articleOptions}  // Utilisez les options transformées ici
                     onChange={(selectedOption) =>
@@ -62,21 +60,14 @@ export default function TransactionForm({ handleSubmit, handleChange, formData, 
                                 name: 'articleId',
                                 value: selectedOption ? selectedOption.value : '',
                             },
-                        } as any)
+                        } as React.ChangeEvent<HTMLInputElement>)
                     }
                     value={articleOptions.find(option => option.value === formData.articleId) || null}
                     placeholder="Rechercher un article"
                     isClearable
                     className="w-full"
                 />
-                {/* <select name="articleId" value={formData.articleId || ""} onChange={handleChange} className="select select-bordered w-full" required>
-                        <option value="">Sélectionnez un article</option>
-                        {articles.map(article => (
-                            <option key={article.id} value={article.id}>
-                                {article.article_name}
-                            </option>
-                        ))}
-                    </select> */}
+                
             </div>
 
 

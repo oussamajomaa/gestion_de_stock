@@ -8,7 +8,7 @@ jest.mock('sweetalert2', () => ({
   fire: jest.fn(),
 }));
 
-const mockedSwal = Swal.fire as jest.Mock;
+// const mockedSwal = Swal.fire as jest.Mock;
 
 
 jest.mock('next/navigation', () => ({

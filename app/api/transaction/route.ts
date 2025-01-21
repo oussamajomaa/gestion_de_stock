@@ -126,7 +126,7 @@ export async function POST(req:Request) {
 
                     remainingQuantity = 0;
                 } else {
-                    let batch_qty = batch.quantity
+                    const batch_qty = batch.quantity
                     // Consommer entièrement ce lot
                     await prisma.batch.update({
                         where: { id: batch.id },

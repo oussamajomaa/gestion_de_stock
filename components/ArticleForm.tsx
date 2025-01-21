@@ -21,7 +21,7 @@ export default function ArticleForm({ onSubmit, onChange, formData, categories }
         <form onSubmit={onSubmit}>
             <div className="mb-4">
                 <div className="mb-4">
-                    <label className="block" htmlFor="article_name">Nom de l'article</label>
+                    <label className="block" htmlFor="article_name">Nom de l&apos;article</label>
                     <input
                         id="article_name"
                         className="input input-bordered w-full"
