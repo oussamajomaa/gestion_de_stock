@@ -19,6 +19,7 @@ export default function Page() {
         batch_expiration_date: new Date().toISOString().split("T")[0],  // New field for batch expiration date
     });
 
+    
     const router = useRouter();
 
     // Fetch articles data
@@ -42,10 +43,13 @@ export default function Page() {
         value: article.id,
     }));
 
+    const userId = localStorage.getItem('id')
     // Handle form submission
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        formData.userId = 1;  // Assign user ID as needed
+        if (userId) {
+            formData.userId = parseInt(userId, 10); // Convertit la chaîne en nombre
+        } 
 
         const response = await fetch('/api/transaction', {
             method: 'POST',
@@ -115,10 +119,10 @@ export default function Page() {
                         <label className="block">Quantité</label>
                         <input type="number" name="transaction_quantity" value={formData.transaction_quantity} onChange={handleChange} className="input input-bordered w-full" required />
                     </div>
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                         <label className="block">User</label>
                         <input type="number" name="userId" value={formData.userId || 1} onChange={handleChange} className="input input-bordered w-full" required />
-                    </div>
+                    </div> */}
                     <div className="mb-4">
                         <label className="block">Date de transaction</label>
                         <input type="date" name="transaction_date" value={formData.transaction_date} onChange={handleChange} className="input input-bordered w-full" />

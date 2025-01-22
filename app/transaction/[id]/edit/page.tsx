@@ -11,9 +11,6 @@ import { useParams, useRouter } from "next/navigation";
 import { IoIosArrowBack } from "react-icons/io";
 import { FiSave } from "react-icons/fi";
 
-// Importation des types pour les articles
-import { Article } from "@/types/article";
-
 // Importation de SweetAlert2 pour afficher des alertes utilisateur
 import Swal from "sweetalert2";
 
@@ -26,7 +23,7 @@ export default function Page() {
     const router = useRouter();
 
     // États pour gérer les articles et les données du formulaire
-    const [articles, setArticles] = useState<Article[]>([]); // Liste des articles disponibles
+    // const [articles, setArticles] = useState<Article[]>([]); // Liste des articles disponibles
     const [formData, setFormData] = useState({
         transaction_type: "", // Type de la transaction (ajout/retrait)
         transaction_quantity: 0, // Quantité de l'article pour la transaction
@@ -37,15 +34,17 @@ export default function Page() {
     });
 
     // Fonction pour récupérer la liste des articles disponibles
-    const fetchArticle = async () => {
-        const response = await fetch("/api/article"); // Appel de l'API pour les articles
-        if (response.ok) {
-            const data = await response.json();
-            setArticles(data); // Mise à jour de l'état avec les articles
-        } else {
-            Swal.fire('Erreur', "Une erreur est survenue lors de l'ajout d'une transaction.", 'error');
-        }
-    }
+    // const fetchArticle = async () => {
+    //     const response = await fetch("/api/article"); // Appel de l'API pour les articles
+    //     if (response.ok) {
+    //         const data = await response.json();
+    //         setArticles(data); // Mise à jour de l'état avec les articles
+    //     } else {
+    //         Swal.fire('Erreur', "Une erreur est survenue lors de l'ajout d'une transaction.", 'error');
+    //     }
+    // }
+
+    const userId = localStorage.getItem('id')
 
     // Fonction pour récupérer les données d'une transaction spécifique
     const fetchTransaction = async () => {
@@ -61,12 +60,15 @@ export default function Page() {
                 articleId: data.batch.articleId,
                 userId: data.userId,
             });
+            if (userId) {
+                formData.userId = parseInt(userId, 10); // Convertit la chaîne en nombre
+            }
         }
     }
 
     // Effet pour charger les articles et les données de la transaction au montage du composant
     useEffect(() => {
-        fetchArticle();
+        // fetchArticle();
         fetchTransaction();
     }, []);
 
@@ -138,10 +140,10 @@ export default function Page() {
                     </div>
 
                     {/* Champ pour modifier l'ID utilisateur */}
-                    <div className="mb-4">
+                    {/* <div className="mb-4">
                         <label className="block">User</label>
                         <input type="number" name="userId" value={formData.userId || 1} onChange={handleChange} className="input input-bordered w-full" required />
-                    </div>
+                    </div> */}
 
                     {/* Champ pour modifier la date de la transaction */}
                     <div className="mb-4">

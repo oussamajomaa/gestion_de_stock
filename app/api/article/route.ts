@@ -1,62 +1,71 @@
+// Importation de Prisma pour interagir avec la base de données
 import prisma from '@/lib/prisma';
+
+// Importation de NextResponse pour gérer les réponses HTTP
 import { NextResponse } from "next/server";
 
+// Fonction GET pour récupérer tous les articles
 export async function GET() {
 	// try {
+		// Récupère tous les articles avec leurs catégories et lots associés
 		const articles = await prisma.article.findMany({
 			include: {
-				category: true,
+				category: true, // Inclure les informations de la catégorie associée
 				batches: true, // Inclure les lots associés
 			},
 		});
 
-		// Calculer la quantité actuelle pour chaque article
+		// Calculer la quantité actuelle pour chaque article en fonction des lots
 		const articlesWithQuantities = articles.map((article) => {
 			let totalEntrées = 0;
 
+			// Additionner les quantités des lots pour cet article
 			article.batches.forEach((batch) => {
-
 				totalEntrées += batch.quantity;
-
 			});
 
-			const currentQuantity = totalEntrées
+			// Ajouter la quantité actuelle calculée à chaque article
+			const currentQuantity = totalEntrées;
 
 			return {
-				...article,
-				current_quantity: currentQuantity,
+				...article, // Inclure toutes les propriétés de l'article
+				current_quantity: currentQuantity, // Ajouter la quantité actuelle
 			};
 		});
 
+		// Retourner les articles enrichis avec leurs quantités sous forme de JSON
 		return NextResponse.json(articlesWithQuantities);
 	// } catch (error: unknown) {
+	// 	// Retourner une erreur en cas de problème
 	// 	return NextResponse.json(JSON.stringify({ error: "Erreur lors de la récupération des articles" }),
 	// 		{ status: 500 })
 	// }
-
-
-
 }
 
+// Fonction POST pour ajouter un nouvel article
 export async function POST(req: Request) {
 	try {
-		const body = await req.json()
-		const { article_name, article_description, barcode, quantity_min, unit, unit_price, categoryId } = body || {}
+		// Récupérer les données du corps de la requête
+		const body = await req.json();
+		const { article_name, article_description, barcode, quantity_min, unit, unit_price, categoryId } = body || {};
 
+		// Créer un nouvel article dans la base de données
 		await prisma.article.create({
 			data: {
-				article_name,
-				article_description,
-				barcode,
-				quantity_min: parseInt(quantity_min, 10), // Convertit en `Int`
-				unit,
-				unit_price: parseFloat(unit_price), // Convertit en `Float`
-				category: categoryId ? { connect: { id: parseInt(categoryId, 10) } } : undefined, // Relier la catégorie si `categoryId` est défini
+				article_name, // Nom de l'article
+				article_description, // Description de l'article
+				barcode, // Code-barres
+				quantity_min: parseInt(quantity_min, 10), // Convertir la quantité minimale en entier
+				unit, // Unité de mesure
+				unit_price: parseFloat(unit_price), // Convertir le prix unitaire en nombre à virgule flottante
+				category: categoryId ? { connect: { id: parseInt(categoryId, 10) } } : undefined, // Relier à une catégorie si elle est définie
 			}
 		});
-		return NextResponse.json({ message: 'Un article a été ajouté' })
+
+		// Retourner une réponse JSON confirmant l'ajout de l'article
+		return NextResponse.json({ message: 'Un article a été ajouté' });
 	} catch (error: unknown) {
-		return NextResponse.json(error)
+		// Retourner l'erreur en cas de problème
+		return NextResponse.json(error);
 	}
 }
-
