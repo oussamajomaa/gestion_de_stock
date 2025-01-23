@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 		});
 
 		if (!user) {
-			return NextResponse.json({ error: "Invalid email or password",icon:"error" }, { status: 401 });
+			return NextResponse.json({ message: "Invalid email or password",icon:"error" }, { status: 401 });
 		}
 
 		// Vérifie le mot de passe avec bcrypt
