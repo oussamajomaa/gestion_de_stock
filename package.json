@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "test": "npx jest test",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -14,6 +15,7 @@
     
     "test-editArticle": "npx jest editArticle.test.tsx",
     "test-login": "npx jest login.test.tsx",
+    "test-validEmail": "npx jest validEmail.test.tsx",
     "test-login-integration": "npx jest login.test.tsx",
     "test-user": "npx jest user.test.tsx",
     "test-user-integration": "npx jest user.integration.test.tsx",

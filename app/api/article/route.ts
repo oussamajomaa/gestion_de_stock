@@ -2,39 +2,50 @@
 import prisma from '@/lib/prisma';
 
 // Importation de NextResponse pour gérer les réponses HTTP
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+import { authMiddleware } from '@/services/authMiddleware';
 
 // Fonction GET pour récupérer tous les articles
-export async function GET() {
+export async function GET(req: NextRequest) {
 	// try {
-		// Récupère tous les articles avec leurs catégories et lots associés
-		const articles = await prisma.article.findMany({
-			include: {
-				category: true, // Inclure les informations de la catégorie associée
-				batches: true, // Inclure les lots associés
-			},
+
+	// Vérifier l'authentification avec le middleware
+	const tokenVerification = authMiddleware(req);
+	if (tokenVerification.error) {
+		return NextResponse.json(
+			{ message: tokenVerification.error },
+			{ status: tokenVerification.status }
+		);
+	}
+	// Récupère tous les articles avec leurs catégories et lots associés
+	const articles = await prisma.article.findMany({
+		include: {
+			category: true, // Inclure les informations de la catégorie associée
+			batches: true, // Inclure les lots associés
+		},
+	});
+
+	// Calculer la quantité actuelle pour chaque article en fonction des lots
+	const articlesWithQuantities = articles.map((article) => {
+		let totalEntrées = 0;
+
+		// Additionner les quantités des lots pour cet article
+		article.batches.forEach((batch) => {
+			totalEntrées += batch.quantity;
 		});
 
-		// Calculer la quantité actuelle pour chaque article en fonction des lots
-		const articlesWithQuantities = articles.map((article) => {
-			let totalEntrées = 0;
+		// Ajouter la quantité actuelle calculée à chaque article
+		const currentQuantity = totalEntrées;
 
-			// Additionner les quantités des lots pour cet article
-			article.batches.forEach((batch) => {
-				totalEntrées += batch.quantity;
-			});
+		return {
+			...article, // Inclure toutes les propriétés de l'article
+			current_quantity: currentQuantity, // Ajouter la quantité actuelle
+		};
+	});
 
-			// Ajouter la quantité actuelle calculée à chaque article
-			const currentQuantity = totalEntrées;
-
-			return {
-				...article, // Inclure toutes les propriétés de l'article
-				current_quantity: currentQuantity, // Ajouter la quantité actuelle
-			};
-		});
-
-		// Retourner les articles enrichis avec leurs quantités sous forme de JSON
-		return NextResponse.json(articlesWithQuantities);
+	// Retourner les articles enrichis avec leurs quantités sous forme de JSON
+	return NextResponse.json(articlesWithQuantities);
 	// } catch (error: unknown) {
 	// 	// Retourner une erreur en cas de problème
 	// 	return NextResponse.json(JSON.stringify({ error: "Erreur lors de la récupération des articles" }),
